@@ -6,36 +6,30 @@ import { useTheme } from "@/hooks/useTheme";
 const ThemeToggle = () => {
     const { theme, toggleTheme, mounted } = useTheme();
 
-    if (!mounted) return null;
+    if (!mounted) {
+        return (
+            <button
+                className="rounded-full w-9 h-9 absolute top-4 right-4 bg-white/10 backdrop-blur-sm"
+                disabled
+                aria-label="Cambiar tema"
+            >
+                <FaMoon className="w-4 h-4 text-primary mx-auto my-auto" />
+            </button>
+        );
+    }
 
     return (
-        <div className="flex items-center">
-            <label className="relative inline-block w-[56px] h-[30px] cursor-pointer">
-                <input
-                    type="checkbox"
-                    checked={theme === "dark"}
-                    onChange={toggleTheme}
-                    className="sr-only peer"
-                />
-                <div className={`
-                    absolute inset-0 transition-all duration-300 rounded-full
-                    ${theme === "dark" ? "dark:bg-secondary bg-secondary" : "bg-gray-200"}
-                `}>
-                    <div className={`
-                        absolute top-[2px] left-[2px]
-                        transition-all duration-300
-                        ${theme === "dark" ? "translate-x-[26px]" : ""}
-                    `}>
-                        <span className="dark:hidden bg-white rounded-full p-2 flex items-center justify-center w-[26px] h-[26px]">
-                            <FaSun className="text-[#969AA1] w-3 h-3" />
-                        </span>
-                        <span className="hidden dark:inline-block bg-white rounded-full p-2 items-center justify-center w-[26px] h-[26px]">
-                            <FaMoon className="text-[#969AA1] w-3 h-3" />
-                        </span>
-                    </div>
-                </div>
-            </label>
-        </div>
+        <button
+            onClick={toggleTheme}
+            className="rounded-full w-9 h-9 absolute top-4 right-4 bg-white/10 backdrop-blur-sm dark:bg-gray-800/30 hover:bg-white/20 dark:hover:bg-gray-700/40 transition-colors"
+            aria-label="Cambiar tema"
+        >
+            {theme === "dark" ? (
+                <FaSun className="w-4 h-4 text-yellow-400 mx-auto my-auto" />
+            ) : (
+                <FaMoon className="w-4 h-4 text-primary mx-auto my-auto" />
+            )}
+        </button>
     );
 };
 
