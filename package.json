@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seed": "ts-node src/seed/seed-database.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.8.2",
@@ -15,6 +16,7 @@
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-slot": "^1.2.3",
     "autoprefixer": "^10.4.21",
+    "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.511.0",
@@ -36,6 +38,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
     "prisma": "^6.8.2",
+    "ts-node": "^10.9.2",
     "typescript": "^5"
   }
 }
