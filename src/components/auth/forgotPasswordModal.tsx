@@ -92,7 +92,7 @@ const ForgotPasswordModal = ({ open, onOpenChange }: ForgotPasswordModalProps) =
                                 <Input
                                     id="recovery-email"
                                     type="email"
-                                    placeholder="farmaceutico@ejemplo.com"
+                                    placeholder="Ingresa tu correo electrónico"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     className="pl-10 border-gray-300 focus:border-primary focus:ring-primary dark:border-gray-700 dark:bg-gray-800 dark:text-white"
