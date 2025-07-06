@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { logout } from "@/actions"
 
 interface LogoutButtonProps {
     collapsed?: boolean
@@ -10,6 +11,7 @@ const LogoutButton = ({ collapsed = false }: LogoutButtonProps) => {
     return (
         <div className="p-4 border-t border-gray-200 dark:border-gray-800">
             <Button
+                onClick={() => logout()}
                 variant="ghost"
                 className={cn(
                     "w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800",
