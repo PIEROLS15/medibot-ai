@@ -1,12 +1,18 @@
 import Link from "next/link"
 import { Settings } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useSession } from 'next-auth/react'
 
 interface UserProfileProps {
     collapsed?: boolean
 }
 
 const UserProfile = ({ collapsed = false }: UserProfileProps) => {
+    const { data: session } = useSession()
+
+    const initials = session?.user ?
+        (session.user.firstName.charAt(0).toUpperCase() + session.user.lastName.charAt(0).toUpperCase()) : ''
+
     return (
         <>
             <div className="px-2 mb-4">
@@ -19,11 +25,16 @@ const UserProfile = ({ collapsed = false }: UserProfileProps) => {
                     {!collapsed ? (
                         <div className="flex items-center w-full">
                             <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-sm font-medium">
-                                JD
+                                {initials || '??'}
                             </div>
                             <div className="ml-3 flex-1 min-w-0">
-                                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">Juan Pérez</p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">Administrador</p>
+                                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                    {session?.user?.firstName} {session?.user?.lastName}
+                                </p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                    {session?.user?.role === 'Administrator' ? 'Administrador' :
+                                        session?.user?.role === 'Pharmacist' ? 'Farmacéutico' : ''}
+                                </p>
                             </div>
                             <Link
                                 href="/dashboard/perfil"
@@ -40,14 +51,14 @@ const UserProfile = ({ collapsed = false }: UserProfileProps) => {
                             title="Ver perfil"
                         >
                             <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center text-white text-xs font-medium">
-                                JP
+                                {initials || '??'}
                             </div>
                         </Link>
                     )}
                 </div>
             </div>
         </>
-    );
+    )
 }
 
-export default UserProfile;
+export default UserProfile

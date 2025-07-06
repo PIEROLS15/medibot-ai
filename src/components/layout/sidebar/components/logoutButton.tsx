@@ -1,17 +1,25 @@
 import { Button } from "@/components/ui/button"
 import { LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { logout } from "@/actions"
+import { useRouter } from "next/navigation"
+import { signOut } from "next-auth/react"
 
 interface LogoutButtonProps {
     collapsed?: boolean
 }
 
 const LogoutButton = ({ collapsed = false }: LogoutButtonProps) => {
+    const router = useRouter()
+
+    const handleLogout = async () => {
+        await signOut({ redirect: false })
+
+        router.push("/")
+    }
     return (
         <div className="p-4 border-t border-gray-200 dark:border-gray-800">
             <Button
-                onClick={() => logout()}
+                onClick={handleLogout}
                 variant="ghost"
                 className={cn(
                     "w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800",

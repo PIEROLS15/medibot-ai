@@ -1,61 +1,62 @@
 'use client'
 
 import type React from "react"
-import { useEffect, useState } from "react"
+import { signIn } from "next-auth/react"
+import { useToast } from "@/hooks/use-toast"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Loader2, Mail, Lock, Eye, EyeOff } from "lucide-react"
 import ForgotPasswordModal from "@/components/auth/forgotPasswordModal"
-import { useActionState } from "react"
-import { authenticate } from "@/actions"
 import { useRouter } from "next/navigation"
-import { z } from "zod"
 
-const loginSchema = z.object({
-    email: z.string().min(1, "El correo es obligatorio").email("Correo no válido"),
-    password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
-})
 
 const LoginForm = () => {
+    const [showForgotPassword, setShowForgotPassword] = useState(false)
+    const router = useRouter()
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [showPassword, setShowPassword] = useState(false)
-    const [isLoading] = useState(false)
-    const [showForgotPassword, setShowForgotPassword] = useState(false)
-    const [state, dispatch] = useActionState(authenticate, undefined)
-    const router = useRouter()
-    const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
+    const [isLoading, setIsLoading] = useState(false)
+    const { toast } = useToast()
 
-    useEffect(() => {
-        if (state === 'Success') {
-            router.replace('/dashboard')
-        }
-    }, [state, router])
 
-    const handleValidation = (e: React.FormEvent<HTMLFormElement>) => {
-        const formData = new FormData(e.currentTarget)
-        const data = {
-            email: formData.get("email") as string,
-            password: formData.get("password") as string,
-        }
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setIsLoading(true)
 
-        const result = loginSchema.safeParse(data)
-        if (!result.success) {
-            e.preventDefault()
-            const fieldErrors = result.error.flatten().fieldErrors
-            setErrors({
-                email: fieldErrors.email?.[0],
-                password: fieldErrors.password?.[0],
+        const res = await signIn("credentials", {
+            redirect: false,
+            email,
+            password,
+        })
+
+        setIsLoading(false)
+
+        if (res?.ok) {
+            toast({
+                title: "¡Bienvenido!",
+                description: `Has iniciado sesión correctamente.`,
+                duration: 3000,
             })
+
+            // Puedes redirigir según el rol si quieres, usando session.user.role
+            router.push("/dashboard") // O tu ruta destino
         } else {
-            setErrors({})
+            console.log("Error en la autenticación:", res)
+            toast({
+                title: "Error de autenticación",
+                description: res?.error || "Email o contraseña incorrectos. Verifica tus credenciales.",
+                variant: "destructive",
+                duration: 4000,
+            })
         }
     }
 
     return (
         <>
-            <form action={dispatch} onSubmit={handleValidation} className="space-y-4">
+            <form onSubmit={handleLogin} className="space-y-4">
 
                 <div className="space-y-2">
                     <Label htmlFor="email" className="text-gray-700 dark:text-gray-300 font-medium">
@@ -72,7 +73,7 @@ const LoginForm = () => {
                             onChange={(e) => setEmail(e.target.value)}
                             className="pl-10 border-gray-300 focus:border-primary focus:ring-primary dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                         />
-                        {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
+                        {/* {errors.email && <p className="text-sm text-red-500">{errors.email}</p>} */}
                     </div>
                 </div>
 
@@ -103,11 +104,11 @@ const LoginForm = () => {
                             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
                     </div>
-                    <div className="min-h-[20px]">
+                    {/* <div className="min-h-[20px]">
                         {errors.password && (
                             <p className="text-sm text-red-500">{errors.password}</p>
                         )}
-                    </div>
+                    </div> */}
                 </div>
 
                 <div className="flex justify-end">
@@ -138,7 +139,7 @@ const LoginForm = () => {
 
             <ForgotPasswordModal open={showForgotPassword} onOpenChange={setShowForgotPassword} />
         </>
-    );
+    )
 }
 
-export default LoginForm;
+export default LoginForm
