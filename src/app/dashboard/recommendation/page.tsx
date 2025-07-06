@@ -1,6 +1,6 @@
 const Recommendation = () => {
     return (
-        <></>
+        <>Vista de Recomendacioones</>
     );
 }
 

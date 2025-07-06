@@ -1,6 +1,6 @@
 const Users = () => {
     return (
-        <></>
+        <>Vista de Usuarios</>
     );
 }
 

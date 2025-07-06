@@ -1,7 +1,7 @@
 const Dahboard = () => {
     return (
         <>
-            Hola
+            Hola, estas dentro del dashboard
         </>
     );
 }
