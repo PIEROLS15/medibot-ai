@@ -3,7 +3,7 @@ import { LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface LogoutButtonProps {
-    collapsed?: boolean;
+    collapsed?: boolean
 }
 
 const LogoutButton = ({ collapsed = false }: LogoutButtonProps) => {
