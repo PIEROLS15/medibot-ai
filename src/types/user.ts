@@ -16,16 +16,3 @@ export interface User {
         name: string
     }
 }
-
-export interface UsuarioSession {
-    usuario_id: number
-    nombre: string
-    apellido: string
-    correo: string
-    direccion: string | null
-    ciudad: string | null
-    codigo_postal: string | null
-    rol_id: number
-    role: string
-    miembro: boolean
-}
