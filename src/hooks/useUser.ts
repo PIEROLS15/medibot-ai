@@ -2,6 +2,13 @@ import { useState, useEffect, useCallback } from "react"
 import { User } from "@/types/user"
 import { useToast } from "@/hooks/use-toast"
 
+type RegisterUserData = {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+}
+
 export function useUser() {
     const [user, setUser] = useState<User[]>([])
     const [loading, setLoading] = useState(true)
@@ -34,7 +41,7 @@ export function useUser() {
         }
     }, [toast])
 
-    const registerUser = useCallback(async (userData: Omit<User, 'id'>) => {
+    const registerUser = useCallback(async (userData: RegisterUserData) => {
         setLoading(true)
         try {
             const res = await fetch('/api/auth/register', {
