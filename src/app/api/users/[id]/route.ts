@@ -38,7 +38,6 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
     }
 }
 
-
 export async function PUT(request: NextRequest, context: { params: Promise<{ id: string }> }) {
 
     const session = await getServerSession(authOptions)
@@ -124,7 +123,7 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
         })
 
         return NextResponse.json(
-            { message: 'Rol actualizado correctamente', user: updatedUser },
+            { message: 'Usuario actualizado correctamente', user: updatedUser },
             { status: 200 }
         )
     } catch (error) {
@@ -136,7 +135,6 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
         await prisma.$disconnect()
     }
 }
-
 
 export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
 

@@ -1,12 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useToast } from "@/hooks/use-toast"
 import { User } from "@/types/user"
 import EditarUsuarioModal from "@/components/layout/users/userEditModal"
 import DetallesUsuarioModal from "@/components/layout/users/userDetailsModal"
 import UsuariosTableDesktop from "@/components/layout/users/userTableDesktop"
 import UsuariosTableMobile from "@/components/layout/users/userTableMobile"
+import UserStatusDialog from "./userStatusDialog"
 
 interface UsersTableProps {
     user: User[]
@@ -18,8 +18,14 @@ export default function UsuariosTable({ user, searchTerm }: UsersTableProps) {
     const [filteredUsers, setFilteredUsers] = useState<User[]>([])
     const [selectedUser, setSelectedUser] = useState<User | null>(null)
     const [showEditModal, setShowEditModal] = useState(false)
+    const [showStatusModal, setShowStatusModal] = useState(false)
     const [showDetailsModal, setShowDetailsModal] = useState(false)
-    const { toast } = useToast()
+
+    //Inicializa usuarios desde props solo una vez al cargar
+    useEffect(() => {
+        setUsuarios(user)
+        setFilteredUsers(user)
+    }, [user])
 
     // Filtrar usuarios cuando cambia el término de búsqueda
     useEffect(() => {
@@ -48,17 +54,15 @@ export default function UsuariosTable({ user, searchTerm }: UsersTableProps) {
         setShowDetailsModal(true)
     }
 
-    const handleToggleActive = (user: User) => {
-        // Aquí puedes implementar la lógica para activar/desactivar usuario
-        console.log('Toggle active for user:', user.id)
-        toast({
-            title: `Usuario ${user.isActive ? 'desactivado' : 'activado'}`,
-            description: `${user.firstName} ${user.lastName} ha sido ${user.isActive ? 'desactivado' : 'activado'}.`,
-        })
+    const handleStatusUser = (user: User) => {
+        setSelectedUser(user)
+        setShowStatusModal(true)
     }
 
-    const handleUsuarioActualizado = (usuarioActualizado: User) => {
-        const updatedUsuarios = usuarios.map((u) => (u.id === usuarioActualizado.id ? usuarioActualizado : u))
+    const handleStatusUpdated = (userUpdated: User) => {
+        const updatedUsuarios = usuarios.map((u) =>
+            u.id === userUpdated.id ? userUpdated : u
+        )
         setUsuarios(updatedUsuarios)
         setFilteredUsers(
             updatedUsuarios.filter((u) => {
@@ -70,9 +74,27 @@ export default function UsuariosTable({ user, searchTerm }: UsersTableProps) {
                     u.email.toLowerCase().includes(termLower) ||
                     u.role.name.toLowerCase().includes(termLower)
                 )
-            }),
+            })
         )
     }
+
+
+    // const handleUsuarioActualizado = (usuarioActualizado: User) => {
+    //     const updatedUsuarios = usuarios.map((u) => (u.id === usuarioActualizado.id ? usuarioActualizado : u))
+    //     setUsuarios(updatedUsuarios)
+    //     setFilteredUsers(
+    //         updatedUsuarios.filter((u) => {
+    //             if (!searchTerm.trim()) return true
+    //             const termLower = searchTerm.toLowerCase()
+    //             return (
+    //                 u.firstName.toLowerCase().includes(termLower) ||
+    //                 u.lastName.toLowerCase().includes(termLower) ||
+    //                 u.email.toLowerCase().includes(termLower) ||
+    //                 u.role.name.toLowerCase().includes(termLower)
+    //             )
+    //         }),
+    //     )
+    // }
 
     return (
         <div className="w-full">
@@ -81,7 +103,7 @@ export default function UsuariosTable({ user, searchTerm }: UsersTableProps) {
                 filteredUsers={filteredUsers}
                 onViewDetails={handleViewDetails}
                 onEditUser={handleEditUsuario}
-                onToggleActive={handleToggleActive}
+                onToggleActive={handleStatusUser}
             />
 
             {/* Vista de cards para móvil */}
@@ -89,7 +111,7 @@ export default function UsuariosTable({ user, searchTerm }: UsersTableProps) {
                 filteredUsers={filteredUsers}
                 onViewDetails={handleViewDetails}
                 onEditUser={handleEditUsuario}
-                onToggleActive={handleToggleActive}
+                onToggleActive={handleStatusUser}
             />
 
             {/* Modales */}
@@ -100,7 +122,18 @@ export default function UsuariosTable({ user, searchTerm }: UsersTableProps) {
                 onUsuarioActualizado={handleUsuarioActualizado}
             /> */}
 
-            <DetallesUsuarioModal open={showDetailsModal} onOpenChange={setShowDetailsModal} user={selectedUser} />
+            <UserStatusDialog
+                open={showStatusModal}
+                onOpenChange={setShowStatusModal}
+                user={selectedUser}
+                onStatusUpdated={handleStatusUpdated}
+            />
+
+            <DetallesUsuarioModal
+                open={showDetailsModal}
+                onOpenChange={setShowDetailsModal}
+                user={selectedUser}
+            />
         </div>
     )
 }
