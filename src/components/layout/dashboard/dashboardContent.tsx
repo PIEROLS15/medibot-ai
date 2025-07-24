@@ -20,7 +20,7 @@ export default function DashboardContent({ children }: { children: ReactNode }) 
                 <div className={`absolute top-4 z-50 ${isMobile ? "right-4" : "right-4"}`}>
                     <ThemeToggle />
                 </div>
-                <div className={`max-w-6xl mx-auto ${isMobile ? "pt-16" : ""}`}>{children}</div>
+                <div className={`max-w-8xl mx-auto ${isMobile ? "pt-16" : ""}`}>{children}</div>
             </div>
         </div>
     )
