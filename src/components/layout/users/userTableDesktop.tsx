@@ -1,5 +1,6 @@
 'use client'
 
+import { useSession } from "next-auth/react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -27,8 +28,12 @@ export default function UsuariosTableDesktop({
     filteredUsers,
     onViewDetails,
     onEditUser,
-    onToggleActive
+    onToggleActive,
+
 }: UsuariosTableDesktopProps) {
+    const { data: session } = useSession()
+    const isAdmin = session?.user?.roleId === 1
+
     return (
         <div className='hidden md:block rounded-md border dark:border-gray-700 overflow-hidden'>
             <div className='overflow-x-auto'>
@@ -69,7 +74,6 @@ export default function UsuariosTableDesktop({
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <Button variant='ghost' className='h-8 w-8 p-0'>
-                                                    <span className='sr-only'>Abrir menú</span>
                                                     <MoreHorizontal className='h-4 w-4' />
                                                 </Button>
                                             </DropdownMenuTrigger>
@@ -83,20 +87,24 @@ export default function UsuariosTableDesktop({
                                                     <Eye className='mr-2 h-4 w-4' />
                                                     Ver detalles
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem
-                                                    className='dark:text-gray-300 dark:focus:bg-gray-800 dark:focus:text-white cursor-pointer'
-                                                    onClick={() => onEditUser(user)}
-                                                >
-                                                    <Edit className='mr-2 h-4 w-4' />
-                                                    Editar usuario
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem
-                                                    className='dark:text-gray-300 dark:focus:bg-gray-800 dark:focus:text-white cursor-pointer'
-                                                    onClick={() => onToggleActive && onToggleActive(user)}
-                                                >
-                                                    <Power className='mr-2 h-4 w-4' />
-                                                    {user.isActive ? 'Desactivar' : 'Activar'}
-                                                </DropdownMenuItem>
+                                                {isAdmin && (
+                                                    <>
+                                                        <DropdownMenuItem
+                                                            className='dark:text-gray-300 dark:focus:bg-gray-800 dark:focus:text-white cursor-pointer'
+                                                            onClick={() => onEditUser(user)}
+                                                        >
+                                                            <Edit className='mr-2 h-4 w-4' />
+                                                            Editar usuario
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem
+                                                            className='dark:text-gray-300 dark:focus:bg-gray-800 dark:focus:text-white cursor-pointer'
+                                                            onClick={() => onToggleActive && onToggleActive(user)}
+                                                        >
+                                                            <Power className='mr-2 h-4 w-4' />
+                                                            {user.isActive ? 'Desactivar' : 'Activar'}
+                                                        </DropdownMenuItem>
+                                                    </>
+                                                )}
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>
