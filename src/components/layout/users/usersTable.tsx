@@ -11,38 +11,39 @@ import UserStatusDialog from "./userStatusDialog"
 interface UsersTableProps {
     user: User[]
     searchTerm: string
+    onUserUpdate?: (updatedUser: User) => void
 }
 
-export default function UsuariosTable({ user, searchTerm }: UsersTableProps) {
-    const [usuarios, setUsuarios] = useState<User[]>([])
+export default function UsuariosTable({ user, searchTerm, onUserUpdate }: UsersTableProps) {
+    const [users, setUsers] = useState<User[]>([])
     const [filteredUsers, setFilteredUsers] = useState<User[]>([])
     const [selectedUser, setSelectedUser] = useState<User | null>(null)
     const [showEditModal, setShowEditModal] = useState(false)
     const [showStatusModal, setShowStatusModal] = useState(false)
     const [showDetailsModal, setShowDetailsModal] = useState(false)
 
-    //Inicializa usuarios desde props solo una vez al cargar
+    // Inicializa usuarios desde props
     useEffect(() => {
-        setUsuarios(user)
-        setFilteredUsers(user)
+        setUsers(user)
     }, [user])
 
-    // Filtrar usuarios cuando cambia el término de búsqueda
+    // Actualiza filteredUsers cuando cambian usuarios o searchTerm
     useEffect(() => {
         if (!searchTerm.trim()) {
-            setFilteredUsers(user)
+            setFilteredUsers(users)
             return
         }
 
         const termLower = searchTerm.toLowerCase()
-        const filtered = user.filter(
-            (usuario) =>
-                usuario.firstName.toLowerCase().includes(termLower) ||
-                usuario.lastName.toLowerCase().includes(termLower) ||
-                usuario.email.toLowerCase().includes(termLower)
+        const filtered = users.filter(
+            (user) =>
+                user.firstName.toLowerCase().includes(termLower) ||
+                user.lastName.toLowerCase().includes(termLower) ||
+                user.email.toLowerCase().includes(termLower) ||
+                user.role.name.toLowerCase().includes(termLower)
         )
         setFilteredUsers(filtered)
-    }, [searchTerm, user])
+    }, [searchTerm, users])
 
     const handleEditUsuario = (user: User) => {
         setSelectedUser(user)
@@ -60,47 +61,30 @@ export default function UsuariosTable({ user, searchTerm }: UsersTableProps) {
     }
 
     const handleStatusUpdated = (userUpdated: User) => {
-        const updatedUsuarios = usuarios.map((u) =>
+        const updatedUsuarios = users.map((u) =>
             u.id === userUpdated.id ? userUpdated : u
         )
-        setUsuarios(updatedUsuarios)
-        setFilteredUsers(
-            updatedUsuarios.filter((u) => {
-                if (!searchTerm.trim()) return true
-                const termLower = searchTerm.toLowerCase()
-                return (
-                    u.firstName.toLowerCase().includes(termLower) ||
-                    u.lastName.toLowerCase().includes(termLower) ||
-                    u.email.toLowerCase().includes(termLower) ||
-                    u.role.name.toLowerCase().includes(termLower)
-                )
-            })
-        )
+        setUsers(updatedUsuarios)
+
+        if (onUserUpdate) {
+            onUserUpdate(userUpdated)
+        }
     }
 
-    const handleUserUpdated = (userUpdate: User) => {
-        const updatedUsers = user.map((u) =>
-            u.id === userUpdate.id ? { ...u, ...userUpdate } : u
+    const handleUsuarioActualizado = (usuarioActualizado: User) => {
+        const updatedUsuarios = users.map((u) =>
+            u.id === usuarioActualizado.id ? usuarioActualizado : u
         )
-        setUsuarios(updatedUsers)
+        setUsers(updatedUsuarios)
 
-        setFilteredUsers(
-            updatedUsers.filter((u) => {
-                if (!searchTerm.trim()) return true
-                const termLower = searchTerm.toLowerCase()
-                return (
-                    u.firstName.toLowerCase().includes(termLower) ||
-                    u.lastName.toLowerCase().includes(termLower) ||
-                    u.email.toLowerCase().includes(termLower) ||
-                    u.role.name.toLowerCase().includes(termLower)
-                )
-            })
-        )
+        if (onUserUpdate) {
+            onUserUpdate(usuarioActualizado)
+        }
     }
-
 
     return (
         <div className="w-full">
+
             {/* Vista de tabla para desktop */}
             <UsuariosTableDesktop
                 filteredUsers={filteredUsers}
@@ -122,7 +106,7 @@ export default function UsuariosTable({ user, searchTerm }: UsersTableProps) {
                 open={showEditModal}
                 onOpenChange={setShowEditModal}
                 user={selectedUser}
-                onUserUpdated={handleUserUpdated}
+                onUserUpdated={handleUsuarioActualizado}
             />
 
             <UserStatusDialog

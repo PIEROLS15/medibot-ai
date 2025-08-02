@@ -127,6 +127,8 @@ export default function EditarUsuarioModal({
             onOpenChange(false)
         } catch (err) {
             console.error('Error al actualizar el usuario:', err)
+        } finally {
+            setIsLoading(false)
         }
     }
 
