@@ -3,11 +3,11 @@
 import { useState } from "react"
 import Header from '@/components/layout/header'
 import { UserPlus } from 'lucide-react'
-import RegistroUsuarioModal from '@/components/auth/register/registerUserModal'
+import RegisterUserModal from '@/components/auth/register/registerUserModal'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import UsuariosTable from "@/components/layout/users/usersTable"
+import UsersTable from "@/components/layout/users/usersTable"
 import { useUser } from '@/hooks/useUser'
 
 const Users = () => {
@@ -41,11 +41,17 @@ const Users = () => {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <UsuariosTable user={user} searchTerm={searchTerm} />
+                        <UsersTable
+                            user={user}
+                            searchTerm={searchTerm}
+                        />
                     </CardContent>
                 </Card>
 
-                <RegistroUsuarioModal open={showRegistroModal} onOpenChange={setShowRegistroModal} />
+                <RegisterUserModal
+                    open={showRegistroModal}
+                    onOpenChange={setShowRegistroModal}
+                />
 
             </div>
         </>

@@ -14,7 +14,7 @@ interface UsersTableProps {
     onUserUpdate?: (updatedUser: User) => void
 }
 
-export default function UsuariosTable({ user, searchTerm, onUserUpdate }: UsersTableProps) {
+const UsersTable = ({ user, searchTerm, onUserUpdate }: UsersTableProps) => {
     const [users, setUsers] = useState<User[]>([])
     const [filteredUsers, setFilteredUsers] = useState<User[]>([])
     const [selectedUser, setSelectedUser] = useState<User | null>(null)
@@ -124,3 +124,5 @@ export default function UsuariosTable({ user, searchTerm, onUserUpdate }: UsersT
         </div>
     )
 }
+
+export default UsersTable
