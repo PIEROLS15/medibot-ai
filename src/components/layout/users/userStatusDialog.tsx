@@ -41,10 +41,9 @@ const UserStatusDialog = ({
         }
     }
 
-
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-md w-[95vw] max-w-lg mx-auto dark:bg-gray-900 dark:border-gray-800 max-h-[90vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-md w-[95vw] max-w-lg mx-auto dark:bg-gray-800 dark:border-gray-800 max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <AlertTriangle className={`h-5 w-5 ${isActivating ? "text-primary" : "text-destructive"}`} />
@@ -56,12 +55,13 @@ const UserStatusDialog = ({
                             : `¿Estás seguro de que deseas desactivar al usuario ${user?.firstName} ${user?.lastName}? El usuario no podrá acceder al sistema hasta que sea activado nuevamente.`}
                     </DialogDescription>
                 </DialogHeader>
-                <DialogFooter>
+                <DialogFooter className="flex gap-4 sm:gap-2 flex-col sm:flex-row">
                     <DialogClose disabled={isLoading}>Cancelar</DialogClose>
                     <Button
                         variant={isActivating ? "default" : "destructive"}
                         onClick={handleSubmit}
                         disabled={isLoading}
+                        className="text-white"
                     >
                         {isLoading ? (
                             <>

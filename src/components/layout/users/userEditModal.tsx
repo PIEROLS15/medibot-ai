@@ -214,7 +214,7 @@ export default function EditarUsuarioModal({
                         </Select>
                     </div>
 
-                    <DialogFooter className="pt-4">
+                    <DialogFooter className="pt-4 gap-4 sm:gap-2">
                         <Button
                             type="button"
                             variant="outline"
@@ -224,7 +224,7 @@ export default function EditarUsuarioModal({
                         >
                             Cancelar
                         </Button>
-                        <Button type="submit" className="bg-primary hover:bg-secondary" disabled={isLoading}>
+                        <Button type="submit" className="bg-primary hover:bg-secondary text-white" disabled={isLoading}>
                             {isLoading ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

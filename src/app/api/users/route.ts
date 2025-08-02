@@ -7,6 +7,9 @@ export async function GET() {
             include: {
                 role: true
             },
+            orderBy: {
+                id: 'asc'
+            }
         })
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars

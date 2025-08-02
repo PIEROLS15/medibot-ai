@@ -78,6 +78,14 @@ export default function DetallesUsuarioModal({ open, onOpenChange, user }: Detai
                         </div>
 
                         <div className="flex items-center space-x-3">
+                            <Calendar className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                            <div className="flex-1">
+                                <p className="text-sm font-medium text-gray-900 dark:text-white">Ultima modificación</p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">{formatDate(user.updatedAt)}</p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center space-x-3">
                             <Activity className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                             <div className="flex-1">
                                 <p className="text-sm font-medium text-gray-900 dark:text-white">Estado de la Cuenta</p>
