@@ -78,23 +78,26 @@ export default function UsuariosTable({ user, searchTerm }: UsersTableProps) {
         )
     }
 
+    const handleUserUpdated = (userUpdate: User) => {
+        const updatedUsers = user.map((u) =>
+            u.id === userUpdate.id ? { ...u, ...userUpdate } : u
+        )
+        setUsuarios(updatedUsers)
 
-    // const handleUsuarioActualizado = (usuarioActualizado: User) => {
-    //     const updatedUsuarios = usuarios.map((u) => (u.id === usuarioActualizado.id ? usuarioActualizado : u))
-    //     setUsuarios(updatedUsuarios)
-    //     setFilteredUsers(
-    //         updatedUsuarios.filter((u) => {
-    //             if (!searchTerm.trim()) return true
-    //             const termLower = searchTerm.toLowerCase()
-    //             return (
-    //                 u.firstName.toLowerCase().includes(termLower) ||
-    //                 u.lastName.toLowerCase().includes(termLower) ||
-    //                 u.email.toLowerCase().includes(termLower) ||
-    //                 u.role.name.toLowerCase().includes(termLower)
-    //             )
-    //         }),
-    //     )
-    // }
+        setFilteredUsers(
+            updatedUsers.filter((u) => {
+                if (!searchTerm.trim()) return true
+                const termLower = searchTerm.toLowerCase()
+                return (
+                    u.firstName.toLowerCase().includes(termLower) ||
+                    u.lastName.toLowerCase().includes(termLower) ||
+                    u.email.toLowerCase().includes(termLower) ||
+                    u.role.name.toLowerCase().includes(termLower)
+                )
+            })
+        )
+    }
+
 
     return (
         <div className="w-full">
@@ -115,12 +118,12 @@ export default function UsuariosTable({ user, searchTerm }: UsersTableProps) {
             />
 
             {/* Modales */}
-            {/* <EditarUsuarioModal
+            <EditarUsuarioModal
                 open={showEditModal}
                 onOpenChange={setShowEditModal}
-                usuario={setSelectedUser}
-                onUsuarioActualizado={handleUsuarioActualizado}
-            /> */}
+                user={selectedUser}
+                onUserUpdated={handleUserUpdated}
+            />
 
             <UserStatusDialog
                 open={showStatusModal}

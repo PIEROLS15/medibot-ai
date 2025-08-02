@@ -1,8 +1,4 @@
-"use client"
-
-import React from "react"
-
-import { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -18,30 +14,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, Save } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { User } from "@/types/user"
-
-interface Usuario {
-    id: string
-    nombres: string
-    apellidos: string
-    email: string
-    rol: string
-    activo: boolean
-    fechaRegistro: string
-    ultimoAcceso: string | null
-}
+import { useUser } from "@/hooks/useUser"
+import { useRoles } from "@/hooks/useRoles"
+import { getNameRoleUser } from '@/utils/user'
 
 interface EditarUsuarioModalProps {
     open: boolean
     onOpenChange: (open: boolean) => void
-    usuario: User | null
-    onUsuarioActualizado: (usuario: User) => void
+    user: User | null
+    onUserUpdated: (user: User) => void
 }
 
 export default function EditarUsuarioModal({
     open,
     onOpenChange,
-    usuario,
-    onUsuarioActualizado,
+    user,
+    onUserUpdated,
 }: EditarUsuarioModalProps) {
     const [formData, setFormData] = useState({
         nombres: "",
@@ -51,17 +39,24 @@ export default function EditarUsuarioModal({
     })
     const [isLoading, setIsLoading] = useState(false)
     const { toast } = useToast()
+    const { updateUser } = useUser()
+    const { roles, fetchRoles } = useRoles()
+
+    // Cargar roles al montar el componente
+    useEffect(() => {
+        fetchRoles()
+    }, [fetchRoles])
 
     React.useEffect(() => {
-        if (usuario) {
+        if (user) {
             setFormData({
-                nombres: usuario.firstName,
-                apellidos: usuario.lastName,
-                email: usuario.email,
-                rol: usuario.role.name,
+                nombres: user.firstName,
+                apellidos: user.lastName,
+                email: user.email,
+                rol: user.role.name,
             })
         }
-    }, [usuario])
+    }, [user])
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target
@@ -100,31 +95,38 @@ export default function EditarUsuarioModal({
         setIsLoading(true)
 
         try {
-            // Simulación de actualización
-            await new Promise((resolve) => setTimeout(resolve, 1500))
+            const selectedRole = roles.find((role) => role.name === formData.rol)
 
-            const usuarioActualizado = {
-                ...usuario!,
-                ...formData,
+            if (!selectedRole) {
+                toast({
+                    variant: "destructive",
+                    title: "Error de rol",
+                    description: "El rol seleccionado no es válido.",
+                });
+                return;
+            }
+            const roleId = selectedRole.id;
+
+            await updateUser(user!.id, {
+                firstName: formData.nombres,
+                lastName: formData.apellidos,
+                email: formData.email,
+                roleId: roleId,
+            })
+
+            const userUpdate: User = {
+                ...user!,
+                firstName: formData.nombres,
+                lastName: formData.apellidos,
+                email: formData.email,
+                role: selectedRole
             }
 
-            onUsuarioActualizado(usuarioActualizado)
-
-            toast({
-                variant: "success",
-                title: "Usuario actualizado",
-                description: `Los datos de ${formData.nombres} ${formData.apellidos} han sido actualizados correctamente.`,
-            })
+            onUserUpdated(userUpdate)
 
             onOpenChange(false)
         } catch (err) {
-            toast({
-                variant: "destructive",
-                title: "Error del servidor",
-                description: "Error al actualizar el usuario. Intente nuevamente.",
-            })
-        } finally {
-            setIsLoading(false)
+            console.error('Error al actualizar el usuario:', err)
         }
     }
 
@@ -134,7 +136,7 @@ export default function EditarUsuarioModal({
         }
     }
 
-    if (!usuario) return null
+    if (!user) return null
 
     return (
         <Dialog open={open} onOpenChange={handleClose}>
@@ -201,8 +203,11 @@ export default function EditarUsuarioModal({
                                 <SelectValue placeholder="Seleccionar rol" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="Administrador">Administrador</SelectItem>
-                                <SelectItem value="Farmacéutico">Farmacéutico</SelectItem>
+                                {roles.map((role) => (
+                                    <SelectItem key={role.id} value={role.name}>
+                                        {getNameRoleUser(role.name)}
+                                    </SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
                     </div>

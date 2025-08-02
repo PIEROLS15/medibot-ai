@@ -115,9 +115,46 @@ export function useUser() {
         }
     }, [toast])
 
+    const updateUser = useCallback(async (userId: number, userData: Partial<User>) => {
+        setLoading(true)
+        try {
+            const res = await fetch(`/api/users/${userId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(userData)
+            })
+
+            const data = await res.json()
+            if (res.ok) {
+                toast({
+                    title: 'Éxito',
+                    description: `El usuario ${userData.firstName} ${userData.lastName} se ha actualizado correctamente`,
+                    duration: 3000,
+                })
+            } else {
+                toast({
+                    title: 'Error',
+                    description: data.message || 'No se pudo actualizar el estado del usuario',
+                    duration: 3000,
+                })
+            }
+        } catch (error) {
+            console.error('Error al actualizar el usuario:', error)
+            toast({
+                title: 'Error',
+                description: 'Hubo un problema al actualizar el usuario',
+                duration: 3000,
+            })
+        } finally {
+            setLoading(false)
+        }
+    }, [toast])
+
     useEffect(() => {
         fetchUser()
     }, [fetchUser])
 
-    return { user, loading, fetchUser, registerUser, updateStatusUser }
+    return { user, loading, fetchUser, registerUser, updateStatusUser, updateUser }
 }
