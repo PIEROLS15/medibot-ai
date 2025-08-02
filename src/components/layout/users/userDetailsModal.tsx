@@ -65,7 +65,7 @@ export default function DetallesUsuarioModal({ open, onOpenChange, user }: Detai
                             <Shield className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                             <div className="flex-1">
                                 <p className="text-sm font-medium text-gray-900 dark:text-white">Rol del Sistema</p>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">{user.role.name}</p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">{getNameRoleUser(user.role.name)}</p>
                             </div>
                         </div>
 
