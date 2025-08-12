@@ -137,7 +137,13 @@ const RegisterUserModal = ({ open, onOpenChange }: RegisterUserModalProps) => {
                             El usuario {formData.firstName} {formData.lastName} ha sido registrado correctamente con el rol de
                             Farmacéutico.
                         </p>
-                        <Button onClick={handleClose} className='bg-primary hover:bg-secondary text-white'>
+                        <Button
+                            onClick={() => {
+                                handleClose()
+                                window.location.reload()
+                            }}
+                            className='bg-primary hover:bg-secondary text-white'
+                        >
                             Entendido
                         </Button>
                     </div>
