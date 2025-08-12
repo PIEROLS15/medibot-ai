@@ -28,11 +28,6 @@ model Role {
   users User[]
 }
 
-enum RoleType {
-  Administrator
-  Pharmacist
-}
-
 model Patient {
   id                   Int                 @id @default(autoincrement())
   identificationId     Int
@@ -47,11 +42,6 @@ model IdentificationType {
   id      Int                @id @default(autoincrement())
   type    TypeIdentification @unique
   Patient Patient[]
-}
-
-enum TypeIdentification {
-  DNI
-  RUC
 }
 
 model Medication {
@@ -77,6 +67,16 @@ model ResultOptions {
   id                Int                 @id @default(autoincrement())
   type              TypeResultOptions   @unique
   medicationHistory MedicationHistory[]
+}
+
+enum RoleType {
+  Administrator
+  Pharmacist
+}
+
+enum TypeIdentification {
+  DNI
+  RUC
 }
 
 enum TypeResultOptions {

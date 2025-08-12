@@ -11,8 +11,10 @@ export interface User {
     miembro: boolean
     createdAt: string
     updatedAt: string
-    role: {
-        id: number
-        name: string
-    }
+    role: Role
+}
+
+export interface Role {
+    id: number
+    name: string
 }

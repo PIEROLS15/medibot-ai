@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from "react"
-import { User } from "@/types/user"
-import { useToast } from "@/hooks/use-toast"
+import { useState, useEffect, useCallback } from 'react'
+import { User } from '@/types/user'
+import { useToast } from '@/hooks/use-toast'
 
 type RegisterUserData = {
     firstName: string;
@@ -18,22 +18,22 @@ export function useUser() {
         setLoading(true)
         try {
             const res = await fetch(`/api/users/`)
-            if (!res.ok) throw new Error("Error al obtener el usuario")
+            if (!res.ok) throw new Error('Error al obtener el usuario')
             const data = await res.json()
             if (res.ok) {
                 setUser(data)
             } else {
                 toast({
-                    title: "Error",
-                    description: "No se pudieron obtener los usuarios",
+                    title: 'Error',
+                    description: 'No se pudieron obtener los usuarios',
                     duration: 3000,
                 })
             }
         } catch (error) {
-            console.error("Error fetching user:", error)
+            console.error('Error fetching user:', error)
             toast({
-                title: "Error",
-                description: "Hubo un problema al cargar los usuarios",
+                title: 'Error',
+                description: 'Hubo un problema al cargar los usuarios',
                 duration: 3000,
             })
         } finally {
@@ -51,26 +51,100 @@ export function useUser() {
                 },
                 body: JSON.stringify(userData),
             })
-            if (!res.ok) throw new Error("Error al registrar el usuario")
+            if (!res.ok) throw new Error('Error al registrar el usuario')
             const data = await res.json()
             if (res.ok) {
                 toast({
-                    title: "Éxito",
-                    description: `El usuario ${userData.firstName + " " + userData.lastName} se ha creado correctamente`,
+                    title: 'Éxito',
+                    description: `El usuario ${userData.firstName + ' ' + userData.lastName} se ha creado correctamente`,
                     duration: 3000,
                 })
             } else {
                 toast({
-                    title: "Error",
-                    description: data.message || "No se pudo registrar el usuario",
+                    title: 'Error',
+                    description: data.message || 'No se pudo registrar el usuario',
                     duration: 3000,
                 })
             }
         } catch (error) {
-            console.error("Error registering user:", error)
+            console.error('Error registering user:', error)
             toast({
-                title: "Error",
-                description: "Hubo un problema al registrar el usuario",
+                title: 'Error',
+                description: 'Hubo un problema al registrar el usuario',
+                duration: 3000,
+            })
+        } finally {
+            setLoading(false)
+        }
+    }, [toast])
+
+    const updateStatusUser = useCallback(async (userId: number, userData: Partial<User>, newStatus: boolean) => {
+        setLoading(true)
+        try {
+            const res = await fetch(`/api/users/${userId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ isActive: newStatus })
+            })
+
+            const data = await res.json()
+            if (res.ok) {
+                toast({
+                    title: 'Éxito',
+                    description: `El usuario ${userData.firstName} ${userData.lastName} se ha ${newStatus ? 'activado' : 'desactivado'} correctamente`,
+                    duration: 3000,
+                })
+            } else {
+                toast({
+                    title: 'Error',
+                    description: data.message || 'No se pudo actualizar el estado del usuario',
+                    duration: 3000,
+                })
+            }
+        } catch (error) {
+            console.error('Error deactivating user:', error)
+            toast({
+                title: 'Error',
+                description: 'Hubo un problema al actualizar el estado del usuario',
+                duration: 3000,
+            })
+        } finally {
+            setLoading(false)
+        }
+    }, [toast])
+
+    const updateUser = useCallback(async (userId: number, userData: Partial<User>) => {
+        setLoading(true)
+        try {
+            const res = await fetch(`/api/users/${userId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(userData)
+            })
+
+            const data = await res.json()
+            if (res.ok) {
+                toast({
+                    title: 'Éxito',
+                    description: `El usuario ${userData.firstName} ${userData.lastName} se ha actualizado correctamente`,
+                    duration: 3000,
+                })
+            } else {
+                toast({
+                    title: 'Error',
+                    description: data.message || 'No se pudo actualizar el estado del usuario',
+                    duration: 3000,
+                })
+            }
+        } catch (error) {
+            console.error('Error al actualizar el usuario:', error)
+            toast({
+                title: 'Error',
+                description: 'Hubo un problema al actualizar el usuario',
                 duration: 3000,
             })
         } finally {
@@ -82,5 +156,5 @@ export function useUser() {
         fetchUser()
     }, [fetchUser])
 
-    return { user, loading, fetchUser, registerUser }
+    return { user, loading, fetchUser, registerUser, updateStatusUser, updateUser }
 }
