@@ -36,3 +36,77 @@ Cypress.Commands.add('activateUser', () => {
 Cypress.Commands.add('assertActivateUser', () => {
     cy.get('table tbody tr').eq(1).find('td').eq(3).should('contain', 'Activo')
 })
+
+Cypress.Commands.add('updateNameUser', (json) => {
+    cy.putUpdateUser(json, 2)
+
+    cy.get('table tbody tr').eq(1).find('td').eq(5).click()
+    cy.contains('[role="menuitem"]', /^Editar usuario$/).should('be.visible').click()
+
+    cy.fixture(`users/${json}.json`).then((user) => {
+        cy.get('#nombres').click().clear().type(user.firstName)
+    })
+    cy.get('button[type="submit"]').contains('Guardar Cambios').click()
+})
+
+Cypress.Commands.add('assertUpdateNameUser', (json) => {
+    cy.fixture(`users/${json}.json`).then((user) => {
+        cy.get('table tbody tr').eq(1).find('td').eq(0).should('contain', user.firstName)
+    })
+})
+
+Cypress.Commands.add('updateLastNameUser', (json) => {
+    cy.putUpdateUser(json, 2)
+
+    cy.get('table tbody tr').eq(1).find('td').eq(5).click()
+    cy.contains('[role="menuitem"]', /^Editar usuario$/).should('be.visible').click()
+
+    cy.fixture(`users/${json}.json`).then((user) => {
+        cy.get('#apellidos').click().clear().type(user.lastName)
+    })
+    cy.get('button[type="submit"]').contains('Guardar Cambios').click()
+})
+
+Cypress.Commands.add('assertUpdateLastNameUser', (json) => {
+    cy.fixture(`users/${json}.json`).then((user) => {
+        cy.get('table tbody tr').eq(1).find('td').eq(0).should('contain', user.lastName)
+    })
+})
+
+Cypress.Commands.add('updateEmailUser', (json) => {
+    cy.putUpdateUser(json, 2)
+
+    cy.get('table tbody tr').eq(1).find('td').eq(5).click()
+    cy.contains('[role="menuitem"]', /^Editar usuario$/).should('be.visible').click()
+
+    cy.fixture(`users/${json}.json`).then((user) => {
+        cy.get('#email').click().clear().type(user.email)
+    })
+    cy.get('button[type="submit"]').contains('Guardar Cambios').click()
+})
+
+Cypress.Commands.add('assertUpdateEmailUser', (json) => {
+    cy.fixture(`users/${json}.json`).then((user) => {
+        cy.get('table tbody tr').eq(1).find('td').eq(1).should('contain', user.email)
+    })
+})
+
+Cypress.Commands.add('updateRoleUser', (json) => {
+    cy.putUpdateUser(json, 2)
+
+    cy.get('table tbody tr').eq(1).find('td').eq(5).click()
+    cy.contains('[role="menuitem"]', /^Editar usuario$/).should('be.visible').click()
+    cy.get('button[role="combobox"]').click()
+
+    cy.fixture(`users/${json}.json`).then((user) => {
+        cy.get('[role="listbox"] [role="option"]').contains(user.rol).click()
+    })
+
+    cy.get('button[type="submit"]').contains('Guardar Cambios').click()
+})
+
+Cypress.Commands.add('assertUpdateRoleUser', (json) => {
+    cy.fixture(`users/${json}.json`).then((user) => {
+        cy.get('table tbody tr').eq(1).find('td').eq(2).should('contain', user.rol)
+    })
+})
