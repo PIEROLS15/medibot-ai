@@ -17,3 +17,12 @@ Cypress.Commands.add('putUpdateUser', (json, idUser) => {
         }).as('putUpdateUser')
     })
 })
+
+Cypress.Commands.add('putStatusUser', (json, idUser) => {
+    cy.fixture(`users/${json}.json`).then(data => {
+        cy.intercept('PUT', `/api/users/${idUser}`, {
+            statusCode: 200,
+            body: data
+        }).as('putStatusUser')
+    })
+})

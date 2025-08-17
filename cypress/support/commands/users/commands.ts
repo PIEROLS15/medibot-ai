@@ -17,7 +17,9 @@ Cypress.Commands.add('registerUser', (json) => {
     cy.get('button').contains('Entendido').click()
 })
 
-Cypress.Commands.add('inactivateUser', () => {
+Cypress.Commands.add('inactivateUser', (json) => {
+    cy.putStatusUser(json, 2)
+
     cy.get('table tbody tr').eq(1).find('td').eq(5).click()
     cy.contains('[role="menuitem"]', /^Desactivar$/).should('be.visible').click()
     cy.get('button').contains('Desactivar').click()
@@ -27,7 +29,9 @@ Cypress.Commands.add('assertinactivateUser', () => {
     cy.get('table tbody tr').eq(1).find('td').eq(3).should('contain', 'Inactivo')
 })
 
-Cypress.Commands.add('activateUser', () => {
+Cypress.Commands.add('activateUser', (json) => {
+    cy.putStatusUser(json, 2)
+
     cy.get('table tbody tr').eq(1).find('td').eq(5).click()
     cy.contains('[role="menuitem"]', /^Activar$/).should('be.visible').click()
     cy.get('button').contains('Activar').click()

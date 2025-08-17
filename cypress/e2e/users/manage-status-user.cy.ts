@@ -5,12 +5,13 @@ describe(`Inactivate and deactivate user`, () => {
     })
 
     it('should deactivate a user correctly.', () => {
-        cy.inactivateUser()
+        cy.inactivateUser('inactiveUser')
         cy.assertinactivateUser()
     })
 
     it('should activate a user correctly.', () => {
-        cy.activateUser()
+        cy.inactivateUser('inactiveUser')
+        cy.activateUser('activeUser')
         cy.assertActivateUser()
     })
 
