@@ -34,6 +34,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Restore Next.js build cache
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: next-cache-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            next-cache-${{ runner.os }}-
+
       - name: Run ESLint
         run: npm run lint
 
@@ -41,14 +49,7 @@ jobs:
         run: npm run build
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-
-      - name: Cache Next.js build cache
-        uses: actions/cache@v4
-        with:
-          path: .next/cache
-          key: next-cache-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            next-cache-${{ runner.os }}-
+          NEXT_SKIP_BUILD_STATIC_GENERATION: 'true'
 
       - name: Upload build artifact (.next)
         uses: actions/upload-artifact@v4
@@ -93,6 +94,9 @@ jobs:
         env:
           NODE_ENV: production
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          # (Opcional si usas NextAuth u otras envs en runtime)
+          # NEXTAUTH_URL: http://localhost:3000
+          # NEXTAUTH_SECRET: dummysecret
 
       - name: Save Cypress videos & screenshots (on failure)
         if: failure()
