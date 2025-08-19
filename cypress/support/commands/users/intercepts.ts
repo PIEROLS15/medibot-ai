@@ -26,3 +26,21 @@ Cypress.Commands.add('putStatusUser', (json, idUser) => {
         }).as('putStatusUser')
     })
 })
+
+Cypress.Commands.add('getRoles', (json) => {
+    cy.fixture(`users/${json}.json`).then(data => {
+        cy.intercept('GET', `/api/roles`, {
+            statusCode: 200,
+            body: data
+        }).as('getRoles')
+    })
+})
+
+Cypress.Commands.add('getUsers', (json) => {
+    cy.fixture(`users/${json}.json`).then(data => {
+        cy.intercept('GET', `/api/users`, {
+            statusCode: 200,
+            body: data
+        }).as('getUsers')
+    })
+})

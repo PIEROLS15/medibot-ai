@@ -1,7 +1,7 @@
 describe(`Update user`, () => {
     beforeEach(() => {
         cy.loginAdministrator()
-        cy.get('[href="/dashboard/users"]').click()
+        cy.initModuleUsers()
     })
 
     const json = 'updateUser'
