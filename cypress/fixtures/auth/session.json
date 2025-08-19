@@ -1,0 +1,13 @@
+{
+    "user": {
+        "email": "piero@gmail.com",
+        "firstName": "Piero",
+        "lastName": "Llanos",
+        "roleId": 1,
+        "isActive": true,
+        "createdAt": "2025-08-12T00:06:36.380Z",
+        "updatedAt": "2025-08-16T21:28:06.530Z",
+        "role": "Administrator"
+    },
+    "expires": "2027-09-18T02:16:34.202Z"
+}
