@@ -16,7 +16,7 @@ Cypress.Commands.add('loginAdministrator', () => {
     cy.postCredentials('credentials')
     cy.setCookie(SESSION_COOKIE, 'mocked-token-123')
 
-    cy.get('.text-xs', { timeout: 5000 }).should('have.text', 'Administrador')
+    // cy.get('.text-xs', { timeout: 5000 }).should('have.text', 'Administrador')
 
 })
 

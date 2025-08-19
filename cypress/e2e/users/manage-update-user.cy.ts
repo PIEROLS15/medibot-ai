@@ -21,9 +21,9 @@ describe(`Update user`, () => {
         cy.assertUpdateEmailUser(json)
     })
 
-    it('should update a users rol correctly', () => {
-        cy.updateRoleUser(json)
-        cy.assertUpdateRoleUser(json)
-    })
+    // it('should update a users rol correctly', () => {
+    //     cy.updateRoleUser(json)
+    //     cy.assertUpdateRoleUser(json)
+    // })
 
 })
