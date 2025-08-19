@@ -31,7 +31,7 @@ const UserProfile = ({ collapsed = false }: UserProfileProps) => {
                                 <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                                     {session?.user?.firstName} {session?.user?.lastName}
                                 </p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate" data-testid="user-role">
                                     {session?.user?.role === 'Administrator' ? 'Administrador' :
                                         session?.user?.role === 'Pharmacist' ? 'Farmacéutico' : ''}
                                 </p>

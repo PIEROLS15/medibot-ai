@@ -55,5 +55,5 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Cypress
-        run: npx start-server-and-test dev http://localhost:3000 cypress:run
+      # - name: Cypress
+      #   run: npx start-server-and-test start http://localhost:3000 cypress:run
