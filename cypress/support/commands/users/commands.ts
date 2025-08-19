@@ -1,5 +1,12 @@
 /// <reference types="cypress" />
 
+Cypress.Commands.add('initModuleUsers', () => {
+    cy.getRoles('roles')
+    cy.getUsers('users')
+
+    cy.get('[href="/dashboard/users"]').click()
+})
+
 Cypress.Commands.add('registerUser', (json) => {
     cy.postRegisterUser(json)
 

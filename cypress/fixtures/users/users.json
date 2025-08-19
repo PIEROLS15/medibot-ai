@@ -1,0 +1,50 @@
+[
+    {
+        "id": 1,
+        "firstName": "Piero",
+        "lastName": "Llanos",
+        "email": "piero@gmail.com",
+        "resetToken": null,
+        "resetTokenExpiresAt": null,
+        "roleId": 1,
+        "isActive": true,
+        "createdAt": "2025-08-12T00:06:36.380Z",
+        "updatedAt": "2025-08-16T21:28:06.530Z",
+        "role": {
+            "id": 1,
+            "name": "Administrator"
+        }
+    },
+    {
+        "id": 2,
+        "firstName": "Diego",
+        "lastName": "Llanos",
+        "email": "diego@gmail.com",
+        "resetToken": null,
+        "resetTokenExpiresAt": null,
+        "roleId": 2,
+        "isActive": true,
+        "createdAt": "2025-08-12T00:06:36.380Z",
+        "updatedAt": "2025-08-17T16:54:33.175Z",
+        "role": {
+            "id": 2,
+            "name": "Pharmacist"
+        }
+    },
+    {
+        "id": 3,
+        "firstName": "Andy",
+        "lastName": "Llanos",
+        "email": "andy@gmail.com",
+        "resetToken": null,
+        "resetTokenExpiresAt": null,
+        "roleId": 2,
+        "isActive": true,
+        "createdAt": "2025-08-12T00:07:27.808Z",
+        "updatedAt": "2025-08-12T00:07:27.808Z",
+        "role": {
+            "id": 2,
+            "name": "Pharmacist"
+        }
+    }
+]

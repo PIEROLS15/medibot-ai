@@ -4,6 +4,9 @@ declare namespace Cypress {
     */
 
     interface Chainable {
+
+        initModuleUsers(): Chainable<void>
+
         /**
          * Registers a user using data from a fixture and submits the form.
          * Internally calls `cy.postRegisterUser(json)` and fills inputs from
@@ -53,6 +56,10 @@ declare namespace Cypress {
          * cy.putStatusUser('inactivateUser', 2)
          */
         putStatusUser(json: string, idUser: number): Chainable<void>
+
+        getRoles(json: string): Chainable<void>
+
+        getUsers(json: string): Chainable<void>
 
         /**
          * Inactivates a user via the table actions menu and confirms the action.

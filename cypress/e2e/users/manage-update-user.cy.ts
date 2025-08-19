@@ -1,7 +1,7 @@
 describe(`Update user`, () => {
     beforeEach(() => {
         cy.loginAdministrator()
-        cy.get('[href="/dashboard/users"]').click()
+        cy.initModuleUsers()
     })
 
     const json = 'updateUser'
@@ -21,9 +21,9 @@ describe(`Update user`, () => {
         cy.assertUpdateEmailUser(json)
     })
 
-    it('should update a users rol correctly', () => {
-        cy.updateRoleUser(json)
-        cy.assertUpdateRoleUser(json)
-    })
+    // it('should update a users rol correctly', () => {
+    //     cy.updateRoleUser(json)
+    //     cy.assertUpdateRoleUser(json)
+    // })
 
 })

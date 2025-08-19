@@ -1,0 +1,59 @@
+name: CI for Recommendation System
+
+on:
+  push:
+    branches: 
+    - main
+  pull_request:
+    branches: 
+    - main
+
+jobs:
+  lint_build_cypress:
+    name: Lint, Build & Cypress
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:13
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: recommendation_sytem_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/recommendation_sytem_test"
+      NEXTAUTH_SECRET: "test-secret-for-ci-environment-min-32-chars-long"
+      NEXTAUTH_URL: "http://localhost:3000"
+      JWT_SECRET: "test-jwt"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      # - name: Cypress
+      #   run: npx start-server-and-test start http://localhost:3000 cypress:run

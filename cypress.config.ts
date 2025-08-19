@@ -9,7 +9,6 @@ export default defineConfig({
     specPattern: 'cypress/e2e/**/*.cy.ts',
   },
   env: {
-    api_url: 'http://localhost:1337',
     mock_user_administrator: {
       email: 'piero@gmail.com',
       password: '123456'

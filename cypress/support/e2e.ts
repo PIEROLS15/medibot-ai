@@ -16,6 +16,7 @@
 // Import commands.js using ES2015 syntax:
 import './commands'
 import './commands/auth/commands'
+import './commands/auth/intercepts'
 import './commands/users/commands'
 import './commands/users/intercepts'
 
