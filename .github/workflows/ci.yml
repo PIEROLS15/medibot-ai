@@ -9,8 +9,8 @@ on:
     - main
 
 jobs:
-  lint_build:
-    name: Lint & Build
+  lint_build_cypress:
+    name: Lint, Build & Cypress
     runs-on: ubuntu-latest
 
     services:
@@ -53,54 +53,4 @@ jobs:
         run: npm run build
 
       - name: Cypress
-        run: npm run cypress:run
-
-  # e2e_cypress:
-  #   name: Cypress E2E
-  #   needs: lint_build
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 20
-
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
-
-  #     - name: Setup Node
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: ${{ env.NODE_VERSION }}
-  #         cache: "npm"
-
-  #     - name: Install dependencies
-  #       run: npm ci
-
-  #     - name: Download build artifact
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: next-build
-  #         path: .next
-
-  #     - name: Run Cypress tests
-  #       uses: cypress-io/github-action@v6
-  #       with:
-  #         install: false
-  #         start: npm run start
-  #         wait-on: "http://localhost:3000"
-  #         wait-on-timeout: 120
-  #         command: npm run cypress:run
-  #       env:
-  #         NODE_ENV: production
-  #         DATABASE_URL: ${{ secrets.DATABASE_URL }}
-  #         # (Opcional si usas NextAuth u otras envs en runtime)
-  #         # NEXTAUTH_URL: http://localhost:3000
-  #         # NEXTAUTH_SECRET: dummysecret
-
-  #     - name: Save Cypress videos & screenshots (on failure)
-  #       if: failure()
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: cypress-artifacts
-  #         path: |
-  #           cypress/videos
-  #           cypress/screenshots
-  #         if-no-files-found: ignore
+        run: npx start-server-and-test start http://localhost:3000 cypress:run
