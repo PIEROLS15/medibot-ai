@@ -1,62 +1,56 @@
-name: CI
+name: CI for Recommendation System
 
 on:
   push:
-    branches: [main, develop]
+    branches: 
+    - main
   pull_request:
-    branches: [main, develop]
-  workflow_dispatch:
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
-env:
-  NODE_VERSION: "20.x"
-  NEXT_TELEMETRY_DISABLED: "1"
-  CI: "true"
+    branches: 
+    - main
 
 jobs:
   lint_build:
     name: Lint & Build
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:13
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: recommendation_sytem_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/recommendation_sytem_test"
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
+          node-version: '20'
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Restore Next.js build cache
-        uses: actions/cache@v4
-        with:
-          path: .next/cache
-          key: next-cache-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            next-cache-${{ runner.os }}-
+      - name: Generate Prisma client
+        run: npx prisma generate
 
-      - name: Run ESLint
+      - name: Lint
         run: npm run lint
 
-      - name: Build Next.js
+      - name: Build
         run: npm run build
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          NEXT_SKIP_BUILD_STATIC_GENERATION: 'true'
-
-      - name: Upload build artifact (.next)
-        uses: actions/upload-artifact@v4
-        with:
-          name: next-build
-          path: .next
-          if-no-files-found: error
 
   e2e_cypress:
     name: Cypress E2E
