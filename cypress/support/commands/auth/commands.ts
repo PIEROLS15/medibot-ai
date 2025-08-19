@@ -5,7 +5,8 @@ Cypress.Commands.add('loginAdministrator', () => {
     cy.get('.mt-4 > .rounded-full').click()
     cy.get('#email').click().type(Cypress.env('mock_user_administrator').email)
     cy.get('#password').click({ force: true }).type(Cypress.env('mock_user_administrator').password)
-    cy.get('.inline-flex').click()
+    cy.get('button').contains('Iniciar Sesión').click()
+    cy.wait(5000)
     cy.get('.text-xs').should('have.text', 'Administrador')
 })
 
