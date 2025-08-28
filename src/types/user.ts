@@ -18,3 +18,8 @@ export interface Role {
     id: number
     name: string
 }
+
+export interface Identification {
+    id: number
+    type: string
+}
