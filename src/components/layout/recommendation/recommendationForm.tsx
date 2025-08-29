@@ -90,17 +90,20 @@ const RecommendationForm = () => {
         try {
             const selected = identification.find(i => String(i.id) === formData.tipoId)
 
-            // Si tu API te da el tipo por nombre:
             const tipo = selected?.type?.toUpperCase()
             const numero = Number(formData.numeroId)
 
             if (tipo === "DNI") {
                 const result = await searchPersonDni(numero)
-                console.log("Resultado DNI:", result)
+                if (result?.full_name) {
+                    setFormData(prev => ({ ...prev, nombre: result.full_name }))
+                }
             } else if (tipo === "RUC") {
 
                 const result = await searchPersonRuc(numero)
-                console.log("Resultado RUC:", result)
+                if (result?.razon_social) {
+                    setFormData(prev => ({ ...prev, nombre: result.razon_social }))
+                }
             } else {
                 console.warn("Tipo de identificación no soportado:", tipo)
             }

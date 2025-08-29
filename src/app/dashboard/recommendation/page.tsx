@@ -1,5 +1,5 @@
 import Header from '@/components/layout/header'
-import RecommendationForm from '@/components/layout/recommendation/recomendacion-form'
+import RecommendationForm from '@/components/layout/recommendation/recommendationForm'
 
 const Recommendation = () => {
     return (
