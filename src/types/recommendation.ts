@@ -1,30 +1,30 @@
 export interface MedicalInput {
-    edad: number
-    sexo: "masculino" | "femenino" | "otro"
-    peso?: number | null
-    sintomas: string[]
-    alergias?: string[] | null
-    enfermedades_preexistentes?: string[] | null
-    embarazo?: boolean | null
-    medicacion_actual?: string | null
-    duracion_dias: number | null
-    severidad: "leve" | "moderada" | "severa" | null
+    age: number
+    sex: "masculino" | "femenino"
+    weight?: number | null
+    symptoms: string[]
+    allergies?: string[] | null
+    preexisting_diseases?: string[] | null
+    pregnancy?: boolean | null
+    current_medication?: string | null
+    duration_days: number | null
+    severity: "leve" | "moderada" | "severa" | null
 }
 
 export interface Recommendation {
-    medicamento: string
-    forma: string
+    medication: string
+    form: string
     via: string
-    cantidad_valor: number
-    cantidad_unidad: string
-    cada_horas: number
-    duracion_dias: number
-    momento: string
-    instrucciones: string
-    advertencias: string[]
+    amount_value: number
+    amount_unit: string
+    every_hour: number
+    duration_days: number
+    moment: string
+    instructions: string
+    warnings: string[]
 }
 
 export interface MedicalResponse {
-    recomendaciones: Recommendation[]
-    motivo: string | null
+    recommendations: Recommendation[]
+    reason: string | null
 }

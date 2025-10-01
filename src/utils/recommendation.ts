@@ -13,70 +13,69 @@ const noRangeString = z
     .min(1)
     .refine((val) => !hasRange(val), { message: "No debe contener rangos" })
 
-
 const medicalSchema = z.object({
-    edad: z.number(),
-    sexo: z.enum(["masculino", "femenino", "otro"]),
-    peso: z.number().nullable().optional(),
-    sintomas: z.array(z.string().min(1)).nonempty(),
-    alergias: z.array(z.string().min(1)).nullable().optional(),
-    enfermedades_preexistentes: z.array(z.string().min(1)).nullable().optional(),
-    embarazo: z.boolean().nullable().optional(),
-    medicacion_actual: z.string().nullable().optional(),
-    duracion_dias: z.number().nullable(),
-    severidad: z.enum(["leve", "moderada", "severa"]).nullable(),
+    age: z.number(),
+    sex: z.enum(["masculino", "femenino"]),
+    weight: z.number().nullable().optional(),
+    symptoms: z.array(z.string().min(1)).nonempty(),
+    allergies: z.array(z.string().min(1)).nullable().optional(),
+    preexisting_diseases: z.array(z.string().min(1)).nullable().optional(),
+    pregnancy: z.boolean().nullable().optional(),
+    current_medication: z.string().nullable().optional(),
+    duration_days: z.number().nullable(),
+    severity: z.enum(["leve", "moderada", "severa"]).nullable(),
 })
 
 const recommendationSchema = z.object({
-    medicamento: z.string().min(1),
-    forma: z.string().min(1),
+    medication: z.string().min(1),
+    form: z.string().min(1),
     via: z.string().min(1),
-    cantidad_valor: z.number(),
-    cantidad_unidad: noRangeString,
-    cada_horas: z.number(),
-    duracion_dias: z.number(),
-    momento: noRangeString,
-    instrucciones: noRangeString,
-    advertencias: z.array(z.string()),
+    amount_value: z.number(),
+    amount_unit: noRangeString,
+    every_hour: z.number(),
+    duration_days: z.number(),
+    moment: noRangeString,
+    instructions: noRangeString,
+    warnings: z.array(z.string()),
 })
 
 export const medicalResponseSchema = {
     type: "OBJECT",
     properties: {
-        recomendaciones: {
+        recommendations: {
             type: "ARRAY",
             items: {
                 type: "OBJECT",
                 properties: {
-                    medicamento: { type: "STRING" },
-                    forma: { type: "STRING" },
+                    medication: { type: "STRING" },
+                    form: { type: "STRING" },
                     via: { type: "STRING" },
-                    cantidad_valor: { type: "NUMBER" },
-                    cantidad_unidad: { type: "STRING" },
-                    cada_horas: { type: "NUMBER" },
-                    duracion_dias: { type: "NUMBER" },
-                    momento: { type: "STRING" },
-                    instrucciones: { type: "STRING" },
-                    advertencias: { type: "ARRAY", items: { type: "STRING" } }
+                    amount_value: { type: "NUMBER" },
+                    amount_unit: { type: "STRING" },
+                    every_hour: { type: "NUMBER" },
+                    duration_days: { type: "NUMBER" },
+                    moment: { type: "STRING" },
+                    instructions: { type: "STRING" },
+                    warnings: { type: "ARRAY", items: { type: "STRING" } }
                 },
                 required: [
-                    "medicamento",
-                    "cantidad_valor",
-                    "cantidad_unidad",
-                    "cada_horas",
-                    "duracion_dias",
-                    "advertencias"
+                    "medication",
+                    "amount_value",
+                    "amount_unit",
+                    "every_hour",
+                    "duration_days",
+                    "warnings"
                 ],
             }
         },
-        motivo: { type: "STRING", nullable: true }
+        reason: { type: "STRING", nullable: true }
     },
-    required: ["recomendaciones"]
+    required: ["recommendations"]
 } as const
 
 export const medicalResponse = z.object({
-    recomendaciones: z.array(recommendationSchema),
-    motivo: z.string().nullable()
+    recommendations: z.array(recommendationSchema),
+    reason: z.string().nullable()
 })
 
 //Validar los campos de salida
@@ -94,20 +93,23 @@ export async function safeJson(r: Response) {
     try { return await r.json() } catch { return await r.text() }
 }
 
-export function listSintomas(sintomas: string[]) {
-    if (!sintomas || sintomas.length === 0) return "no reportado"
-    return sintomas.map(s => `- ${s}`).join("\n")
+export function listSymptoms(symptoms: string[]) {
+    if (!symptoms || symptoms.length === 0) return "no reportado"
+    return symptoms.map(s => `- ${s}`).join("\n")
 }
-export function listAlergias(alergias?: string[] | null) {
-    if (!alergias || alergias.length === 0) return "no reportado"
-    return alergias.join(", ")
+
+export function listAllergies(allergies?: string[] | null) {
+    if (!allergies || allergies.length === 0) return "no reportado"
+    return allergies.join(", ")
 }
-export function listEnfermedades(enf?: string[] | null) {
-    if (!enf || enf.length === 0) return "no reportado"
-    return enf.join(", ")
+
+export function listDiseases(diseases?: string[] | null) {
+    if (!diseases || diseases.length === 0) return "no reportado"
+    return diseases.join(", ")
 }
-export function fmtEmbarazo(embarazo?: boolean | null) {
-    if (embarazo === true) return "sí"
-    if (embarazo === false) return "no"
+
+export function fmtPregnancy(pregnancy?: boolean | null) {
+    if (pregnancy === true) return "sí"
+    if (pregnancy === false) return "no"
     return "no aplica"
 }
