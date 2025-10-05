@@ -28,43 +28,6 @@ import {
 } from "lucide-react"
 import RecommendationResult from "./recommendationResult"
 import { useIdentification } from "@/hooks/useIdentification"
-import { z } from "zod"
-
-// Schema de validación solo para el frontend
-const formSchema = z.object({
-    idType: z.string().min(1, "Tipo de identificación es requerido"),
-    idNumber: z.string().min(1, "Número de identificación es requerido"),
-    fullName: z.string().min(3, "Nombre completo debe tener al menos 3 caracteres"),
-    age: z.string()
-        .min(1, "Edad es requerida")
-        .refine((val) => {
-            const num = parseInt(val)
-            return !isNaN(num) && num >= 1 && num <= 120
-        }, "Edad debe estar entre 1 y 120 años"),
-    gender: z.enum(["masculino", "femenino"], {
-        required_error: "Sexo es requerido"
-    }),
-    weight: z.string()
-        .min(1, "Peso es requerido")
-        .refine((val) => {
-            const num = parseFloat(val)
-            return !isNaN(num) && num >= 1 && num <= 300
-        }, "Peso debe estar entre 1 y 300 kg"),
-    symptoms: z.string().min(3, "Debe ingresar al menos un síntoma"),
-    allergies: z.string(),
-    diseases: z.string(),
-    pregnancy: z.enum(["si", "no"]),
-    currentMedication: z.string(),
-    symptomDuration: z.string()
-        .min(1, "Duración de síntomas es requerida")
-        .refine((val) => {
-            const num = parseInt(val)
-            return !isNaN(num) && num >= 1 && num <= 365
-        }, "Duración debe estar entre 1 y 365 días"),
-    severity: z.enum(["leve", "moderada", "severa"], {
-        required_error: "Severidad es requerida"
-    })
-})
 
 interface FormRecommendation {
     idType: string
@@ -101,7 +64,7 @@ const RecommendationForm = () => {
         idNumber: "",
         fullName: "",
         age: "",
-        gender: "masculino",
+        gender: "male",
         weight: "",
         symptoms: "",
         allergies: "",
@@ -114,13 +77,13 @@ const RecommendationForm = () => {
     const [isLoading, setIsLoading] = useState(false)
     const [recomendaciones, setRecomendaciones] = useState<Recommendation[] | null>(null)
     const [isSearching, setIsSearching] = useState(false)
-    const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
     const { identification, fetchIdentification, searchPersonDni, searchPersonRuc } = useIdentification()
 
     useEffect(() => {
         fetchIdentification()
     }, [fetchIdentification])
 
+    // Deshabilitar botón hasta que tenga tipo y número
     const canSearch = useMemo(() => {
         return Boolean(formRecommendation.idType) && formRecommendation.idNumber.trim().length > 0
     }, [formRecommendation.idType, formRecommendation.idNumber])
@@ -140,6 +103,7 @@ const RecommendationForm = () => {
                     setFormRecommendation(prev => ({ ...prev, fullName: result.full_name }))
                 }
             } else if (tipo === "RUC") {
+
                 const result = await searchPersonRuc(numero)
                 if (result?.razon_social) {
                     setFormRecommendation(prev => ({ ...prev, fullName: result.razon_social }))
@@ -160,65 +124,32 @@ const RecommendationForm = () => {
     ) => {
         const { name, value } = e.target
         setFormRecommendation((prev) => ({ ...prev, [name]: value }))
-
-        // Limpiar error del campo cuando el usuario escribe
-        if (validationErrors[name]) {
-            setValidationErrors(prev => {
-                const newErrors = { ...prev }
-                delete newErrors[name]
-                return newErrors
-            })
-        }
     }
 
     const handleSelectChange = (name: string, value: string) => {
         setFormRecommendation((prev) => ({ ...prev, [name]: value }))
-
-        // Limpiar error del campo cuando el usuario cambia la selección
-        if (validationErrors[name]) {
-            setValidationErrors(prev => {
-                const newErrors = { ...prev }
-                delete newErrors[name]
-                return newErrors
-            })
-        }
-    }
-
-    const validateForm = (): boolean => {
-        try {
-            formSchema.parse(formRecommendation)
-            setValidationErrors({})
-            return true
-        } catch (error) {
-            if (error instanceof z.ZodError) {
-                const errors: Record<string, string> = {}
-                error.errors.forEach((err) => {
-                    if (err.path[0]) {
-                        errors[err.path[0] as string] = err.message
-                    }
-                })
-                setValidationErrors(errors)
-            }
-            return false
-        }
     }
 
     const processDataForBackend = (data: FormRecommendation) => {
+        // Procesar síntomas (convertir string a array)
         const sintomasArray = data.symptoms
             .split(",")
             .map((s) => s.trim())
             .filter((s) => s.length > 0)
 
+        // Procesar alergias (convertir string a array)
         const alergiasArray = data.allergies
             .split(",")
             .map((a) => a.trim())
             .filter((a) => a.length > 0)
 
+        // Procesar enfermedades preexistentes (convertir string a array)
         const enfermedadesArray = data.diseases
             .split(",")
             .map((e) => e.trim())
             .filter((e) => e.length > 0)
 
+        // Procesar embarazo (solo para mujeres)
         const embarazoValue = data.gender === "femenino" ? data.pregnancy === "si" : null
 
         return {
@@ -237,12 +168,6 @@ const RecommendationForm = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-
-        // Validar formulario antes de enviar
-        if (!validateForm()) {
-            return
-        }
-
         setIsLoading(true)
 
         try {
@@ -278,7 +203,7 @@ const RecommendationForm = () => {
             idNumber: "",
             fullName: "",
             age: "",
-            gender: "masculino",
+            gender: "male",
             weight: "",
             symptoms: "",
             allergies: "",
@@ -289,7 +214,6 @@ const RecommendationForm = () => {
             severity: "",
         })
         setRecomendaciones(null)
-        setValidationErrors({})
     }
 
     return (
@@ -303,12 +227,13 @@ const RecommendationForm = () => {
                                     <div className="flex items-center gap-2">
                                         <IdCard className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                                         <Label htmlFor="idType" className="text-gray-700 dark:text-gray-300">
-                                            Tipo de Identificación <span className="text-red-500">*</span>
+                                            Tipo de Identificación
                                         </Label>
                                     </div>
                                     <Select
                                         value={formRecommendation.idType}
                                         onValueChange={(value) => handleSelectChange("idType", value)}
+                                        required
                                     >
                                         <SelectTrigger className="dark:bg-gray-800 dark:border-gray-700">
                                             <SelectValue placeholder="Seleccionar" />
@@ -321,16 +246,13 @@ const RecommendationForm = () => {
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    {validationErrors.idType && (
-                                        <p className="text-sm text-red-500">{validationErrors.idType}</p>
-                                    )}
                                 </div>
 
                                 <div className="space-y-2">
                                     <div className="flex items-center gap-2">
                                         <Hash className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                                         <Label htmlFor="idNumber" className="text-gray-700 dark:text-gray-300">
-                                            Número de Identificación <span className="text-red-500">*</span>
+                                            Número de Identificación
                                         </Label>
                                     </div>
 
@@ -341,6 +263,7 @@ const RecommendationForm = () => {
                                             value={formRecommendation.idNumber}
                                             onChange={handleChange}
                                             className="dark:bg-gray-800 dark:border-gray-700"
+                                            required
                                         />
 
                                         <Button type="button" onClick={handleSearch} className="bg-primary hover:bg-secondary text-white" disabled={!canSearch || isSearching}>
@@ -354,9 +277,6 @@ const RecommendationForm = () => {
                                             )}
                                         </Button>
                                     </div>
-                                    {validationErrors.idNumber && (
-                                        <p className="text-sm text-red-500">{validationErrors.idNumber}</p>
-                                    )}
                                 </div>
                             </div>
 
@@ -364,7 +284,7 @@ const RecommendationForm = () => {
                                 <div className="flex items-center gap-2">
                                     <User className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                                     <Label htmlFor="fullName" className="text-gray-700 dark:text-gray-300">
-                                        Nombre Completo <span className="text-red-500">*</span>
+                                        Nombre Completo
                                     </Label>
                                 </div>
 
@@ -374,10 +294,8 @@ const RecommendationForm = () => {
                                     value={formRecommendation.fullName}
                                     onChange={handleChange}
                                     className="dark:bg-gray-800 dark:border-gray-700"
+                                    required
                                 />
-                                {validationErrors.fullName && (
-                                    <p className="text-sm text-red-500">{validationErrors.fullName}</p>
-                                )}
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -385,7 +303,7 @@ const RecommendationForm = () => {
                                     <div className="flex items-center gap-2">
                                         <Hourglass className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                                         <Label htmlFor="age" className="text-gray-700 dark:text-gray-300">
-                                            Edad <span className="text-red-500">*</span>
+                                            Edad
                                         </Label>
                                     </div>
 
@@ -398,21 +316,19 @@ const RecommendationForm = () => {
                                         value={formRecommendation.age}
                                         onChange={handleChange}
                                         className="dark:bg-gray-800 dark:border-gray-700"
+                                        required
                                     />
-                                    {validationErrors.age && (
-                                        <p className="text-sm text-red-500">{validationErrors.age}</p>
-                                    )}
                                 </div>
 
                                 <div className="space-y-2">
                                     <div className="flex items-center gap-2">
                                         <Venus className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                                         <Label htmlFor="gender" className="text-gray-700 dark:text-gray-300">
-                                            Sexo <span className="text-red-500">*</span>
+                                            Sexo
                                         </Label>
                                     </div>
 
-                                    <Select value={formRecommendation.gender} onValueChange={(value) => handleSelectChange("gender", value)}>
+                                    <Select value={formRecommendation.gender} onValueChange={(value) => handleSelectChange("gender", value)} required>
                                         <SelectTrigger className="dark:bg-gray-800 dark:border-gray-700">
                                             <SelectValue placeholder="Seleccionar" />
                                         </SelectTrigger>
@@ -421,16 +337,13 @@ const RecommendationForm = () => {
                                             <SelectItem value="femenino">Femenino</SelectItem>
                                         </SelectContent>
                                     </Select>
-                                    {validationErrors.gender && (
-                                        <p className="text-sm text-red-500">{validationErrors.gender}</p>
-                                    )}
                                 </div>
 
                                 <div className="space-y-2">
                                     <div className="flex items-center gap-2">
                                         <Weight className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                                         <Label htmlFor="weight" className="text-gray-700 dark:text-gray-300">
-                                            Peso (kg) <span className="text-red-500">*</span>
+                                            Peso (kg)
                                         </Label>
                                     </div>
 
@@ -444,10 +357,8 @@ const RecommendationForm = () => {
                                         value={formRecommendation.weight}
                                         onChange={handleChange}
                                         className="dark:bg-gray-800 dark:border-gray-700"
+                                        required
                                     />
-                                    {validationErrors.weight && (
-                                        <p className="text-sm text-red-500">{validationErrors.weight}</p>
-                                    )}
                                 </div>
                             </div>
 
@@ -455,7 +366,7 @@ const RecommendationForm = () => {
                                 <div className="flex items-center gap-2">
                                     <Thermometer className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                                     <Label htmlFor="symptoms" className="text-gray-700 dark:text-gray-300">
-                                        Síntomas <span className="text-red-500">*</span>
+                                        Síntomas
                                     </Label>
                                 </div>
 
@@ -466,10 +377,8 @@ const RecommendationForm = () => {
                                     onChange={handleChange}
                                     placeholder="Ej: dolor de cabeza, fiebre, tos"
                                     className="min-h-[80px] dark:bg-gray-800 dark:border-gray-700"
+                                    required
                                 />
-                                {validationErrors.symptoms && (
-                                    <p className="text-sm text-red-500">{validationErrors.symptoms}</p>
-                                )}
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -515,7 +424,7 @@ const RecommendationForm = () => {
                                     <div className="flex items-center gap-2">
                                         <Baby className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                                         <Label htmlFor="pregnancy" className="text-gray-700 dark:text-gray-300">
-                                            ¿Está embarazada? <span className="text-red-500">*</span>
+                                            ¿Está embarazada?
                                         </Label>
                                     </div>
 
@@ -554,7 +463,7 @@ const RecommendationForm = () => {
                                     <div className="flex items-center gap-2">
                                         <Clock className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                                         <Label htmlFor="symptomDuration" className="text-gray-700 dark:text-gray-300">
-                                            Duración de los síntomas (días) <span className="text-red-500">*</span>
+                                            Duración de los síntomas (días)
                                         </Label>
                                     </div>
 
@@ -567,23 +476,22 @@ const RecommendationForm = () => {
                                         value={formRecommendation.symptomDuration}
                                         onChange={handleChange}
                                         className="dark:bg-gray-800 dark:border-gray-700"
+                                        required
                                     />
-                                    {validationErrors.symptomDuration && (
-                                        <p className="text-sm text-red-500">{validationErrors.symptomDuration}</p>
-                                    )}
                                 </div>
 
                                 <div className="space-y-2">
                                     <div className="flex items-center gap-2">
                                         <AlertCircle className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                                         <Label htmlFor="severity" className="text-gray-700 dark:text-gray-300">
-                                            Severidad <span className="text-red-500">*</span>
+                                            Severidad
                                         </Label>
                                     </div>
 
                                     <Select
                                         value={formRecommendation.severity}
                                         onValueChange={(value) => handleSelectChange("severity", value)}
+                                        required
                                     >
                                         <SelectTrigger className="dark:bg-gray-800 dark:border-gray-700">
                                             <SelectValue placeholder="Seleccionar" />
@@ -594,9 +502,6 @@ const RecommendationForm = () => {
                                             <SelectItem value="severa">Severa</SelectItem>
                                         </SelectContent>
                                     </Select>
-                                    {validationErrors.severity && (
-                                        <p className="text-sm text-red-500">{validationErrors.severity}</p>
-                                    )}
                                 </div>
                             </div>
 

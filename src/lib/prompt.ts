@@ -40,7 +40,9 @@ Criterios de recomendación:
 - No inventes datos. Unidades claras: mg, ml, gotas, tabletas, horas, días.
 - Usa principio activo (no marcas). Si requiere receta, no recomiendes usa "reason".
 - No agregues texto fuera del JSON.
-- En "moment" debes recomendar en que momento debe tomar el medicamento, ya sea despues de desayuno, almuerzo, cena (estos son solo ejemplos). Recuerda ser claro y directo en que momento lo debe tomar para que el paciente se organice
+- No agregues punto final en el campo instructions
+- En "moment" debes recomendar en que momento debe tomar el medicamento, ya sea despues de desayuno, almuerzo, cena (estos son solo ejemplos). Recuerda ser claro y directo en que momento lo debe tomar para que el paciente se organice, no puedes decir despues de cada dosis
+- Si ya agregaste json de recommendations, entonces ya no debe ir nada en reason
 - No incluyas nigun tipo de commilla ni etiquetas de formato. Devuelve SOLO el objeto JSON
 
 Formato estricto:

@@ -39,6 +39,44 @@ const recommendationSchema = z.object({
     warnings: z.array(z.string()),
 })
 
+export const recommendationSchemaForm = z.object({
+    idType: z.string().nonempty("Seleccione un tipo de identificación"),
+    idNumber: z.string()
+        .nonempty("El número de identificación es obligatorio")
+        .regex(/^\d+$/, "Debe contener solo números")
+        .min(8, "Debe tener al menos 8 dígitos")
+        .max(12, "No puede tener más de 12 dígitos"),
+    fullName: z.string()
+        .nonempty("El nombre completo es obligatorio")
+        .min(3, "El nombre es demasiado corto"),
+    age: z.string()
+        .nonempty("La edad es obligatoria")
+        .refine(val => Number(val) > 0 && Number(val) <= 120, {
+            message: "La edad debe estar entre 1 y 120",
+        }),
+    gender: z.enum(["masculino", "femenino"], {
+        errorMap: () => ({ message: "Seleccione un género válido" }),
+    }),
+    weight: z.string()
+        .nonempty("El peso es obligatorio")
+        .refine(val => Number(val) > 0 && Number(val) <= 300, {
+            message: "El peso debe estar entre 1 y 300 kg",
+        }),
+    symptoms: z.string().nonempty("Debe ingresar al menos un síntoma"),
+    allergies: z.string().optional(),
+    diseases: z.string().optional(),
+    pregnancy: z.string().optional(),
+    currentMedication: z.string().optional(),
+    symptomDuration: z.string()
+        .nonempty("La duración de síntomas es obligatoria")
+        .refine(val => Number(val) > 0 && Number(val) <= 365, {
+            message: "Los días deben estar entre 1 y 365",
+        }),
+    severity: z.enum(["leve", "moderada", "severa"], {
+        errorMap: () => ({ message: "Seleccione la severidad" }),
+    }),
+})
+
 export const medicalResponseSchema = {
     type: "OBJECT",
     properties: {
@@ -112,4 +150,10 @@ export function fmtPregnancy(pregnancy?: boolean | null) {
     if (pregnancy === true) return "sí"
     if (pregnancy === false) return "no"
     return "no aplica"
+}
+
+export function typeIdentification(idType: string) {
+    if (idType === "1") return "DNI"
+    if (idType === "2") return "RUC"
+    return "No reportado"
 }

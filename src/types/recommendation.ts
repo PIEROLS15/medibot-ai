@@ -1,3 +1,4 @@
+//Backend
 export interface MedicalInput {
     age: number
     sex: "masculino" | "femenino"
@@ -28,3 +29,23 @@ export interface MedicalResponse {
     recommendations: Recommendation[]
     reason: string | null
 }
+
+//Frontend
+export interface FormRecommendation {
+    idType: string
+    idNumber: string
+    fullName: string
+    age: string
+    gender: string
+    weight: string
+    symptoms: string
+    allergies: string
+    diseases: string
+    pregnancy: string
+    currentMedication: string
+    symptomDuration: string
+    severity: string
+}
+
+export type UserData = Pick<FormRecommendation,
+    'idType' | 'idNumber' | 'fullName' | 'age' | 'symptoms' | 'allergies' | 'diseases'>
