@@ -24,6 +24,7 @@ export function useUser() {
                 setUser(data)
             } else {
                 toast({
+                    variant: 'destructive',
                     title: 'Error',
                     description: 'No se pudieron obtener los usuarios',
                     duration: 3000,
@@ -32,6 +33,7 @@ export function useUser() {
         } catch (error) {
             console.error('Error fetching user:', error)
             toast({
+                variant: 'destructive',
                 title: 'Error',
                 description: 'Hubo un problema al cargar los usuarios',
                 duration: 3000,
@@ -55,12 +57,14 @@ export function useUser() {
             const data = await res.json()
             if (res.ok) {
                 toast({
+                    variant: 'success',
                     title: 'Éxito',
                     description: `El usuario ${userData.firstName + ' ' + userData.lastName} se ha creado correctamente`,
                     duration: 3000,
                 })
             } else {
                 toast({
+                    variant: 'destructive',
                     title: 'Error',
                     description: data.message || 'No se pudo registrar el usuario',
                     duration: 3000,
@@ -69,6 +73,7 @@ export function useUser() {
         } catch (error) {
             console.error('Error registering user:', error)
             toast({
+                variant: 'destructive',
                 title: 'Error',
                 description: 'Hubo un problema al registrar el usuario',
                 duration: 3000,
@@ -99,6 +104,7 @@ export function useUser() {
                 })
             } else {
                 toast({
+                    variant: 'destructive',
                     title: 'Error',
                     description: data.message || 'No se pudo actualizar el estado del usuario',
                     duration: 3000,
@@ -107,6 +113,7 @@ export function useUser() {
         } catch (error) {
             console.error('Error deactivating user:', error)
             toast({
+                variant: 'destructive',
                 title: 'Error',
                 description: 'Hubo un problema al actualizar el estado del usuario',
                 duration: 3000,
