@@ -39,43 +39,67 @@ const recommendationSchema = z.object({
     warnings: z.array(z.string()),
 })
 
-export const recommendationSchemaForm = z.object({
-    idType: z.string().nonempty("Seleccione un tipo de identificación"),
-    idNumber: z.string()
-        .nonempty("El número de identificación es obligatorio")
-        .regex(/^\d+$/, "Debe contener solo números")
-        .min(8, "Debe tener al menos 8 dígitos")
-        .max(12, "No puede tener más de 12 dígitos"),
-    fullName: z.string()
-        .nonempty("El nombre completo es obligatorio")
-        .min(3, "El nombre es demasiado corto"),
-    age: z.string()
-        .nonempty("La edad es obligatoria")
-        .refine(val => Number(val) > 0 && Number(val) <= 120, {
-            message: "La edad debe estar entre 1 y 120",
+//Validación formulario
+interface Identification {
+    id: string | number
+    type?: string
+}
+
+export const createFormSchema = (idType: string, identification: Identification[]) => {
+    const selected = identification.find(i => String(i.id) === idType)
+    const tipo = selected?.type?.toUpperCase()
+
+    let idNumberValidation = z.string().min(1, "Número de identificación es requerido")
+
+    if (tipo === "DNI") {
+        idNumberValidation = idNumberValidation
+            .length(8, "El DNI debe tener exactamente 8 dígitos")
+            .regex(/^\d+$/, "El DNI solo debe contener números")
+    } else if (tipo === "RUC") {
+        idNumberValidation = idNumberValidation
+            .length(11, "El RUC debe tener exactamente 11 dígitos")
+            .regex(/^\d+$/, "El RUC solo debe contener números")
+    }
+
+    return z.object({
+        idType: z.string().min(1, "Tipo de identificación es requerido"),
+        idNumber: idNumberValidation,
+        fullName: z.string().min(3, "Nombre es requerido"),
+        age: z.string()
+            .min(1, "Edad es requerida")
+            .refine((val) => {
+                const num = parseInt(val)
+                return !isNaN(num) && num >= 1 && num <= 120
+            }, "Edad es requerido"),
+        gender: z.enum(["masculino", "femenino"], {
+            required_error: "Sexo es requerido"
         }),
-    gender: z.enum(["masculino", "femenino"], {
-        errorMap: () => ({ message: "Seleccione un género válido" }),
-    }),
-    weight: z.string()
-        .nonempty("El peso es obligatorio")
-        .refine(val => Number(val) > 0 && Number(val) <= 300, {
-            message: "El peso debe estar entre 1 y 300 kg",
-        }),
-    symptoms: z.string().nonempty("Debe ingresar al menos un síntoma"),
-    allergies: z.string().optional(),
-    diseases: z.string().optional(),
-    pregnancy: z.string().optional(),
-    currentMedication: z.string().optional(),
-    symptomDuration: z.string()
-        .nonempty("La duración de síntomas es obligatoria")
-        .refine(val => Number(val) > 0 && Number(val) <= 365, {
-            message: "Los días deben estar entre 1 y 365",
-        }),
-    severity: z.enum(["leve", "moderada", "severa"], {
-        errorMap: () => ({ message: "Seleccione la severidad" }),
-    }),
-})
+        weight: z.string()
+            .min(1, "Peso es requerido")
+            .refine((val) => {
+                const num = parseFloat(val)
+                return !isNaN(num) && num >= 1 && num <= 300
+            }, "Peso es requerido"),
+        symptoms: z.string().min(3, "Debe ingresar al menos un síntoma"),
+        allergies: z.string(),
+        diseases: z.string(),
+        pregnancy: z.enum(["si", "no"]),
+        currentMedication: z.string(),
+        symptomDuration: z.string()
+            .min(1, "Duración de síntomas es requerida")
+            .refine((val) => {
+                const num = parseInt(val)
+                return !isNaN(num) && num >= 1 && num <= 365
+            }, "Duración de síntomas es requerida"),
+        severity: z.preprocess(
+            (val) => val === "" ? undefined : val,
+            z.enum(["leve", "moderada", "severa"], {
+                required_error: "Severidad es requerida"
+            })
+        )
+    })
+}
+
 
 export const medicalResponseSchema = {
     type: "OBJECT",

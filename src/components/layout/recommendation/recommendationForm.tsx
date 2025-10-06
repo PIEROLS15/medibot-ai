@@ -1,14 +1,13 @@
-"use client"
+'use client'
 
-import type React from "react"
-
-import { useState, useEffect, useMemo, useCallback, useRef } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import type React from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Card, CardContent } from '@/components/ui/card'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import {
     Loader2,
     FileText,
@@ -25,122 +24,34 @@ import {
     Clock,
     AlertCircle,
     Baby
-} from "lucide-react"
-import RecommendationResult from "./recommendationResult"
-import { useIdentification } from "@/hooks/useIdentification"
-import { z } from "zod"
-
-interface Identification {
-    id: string | number
-    type?: string
-}
-
-// Schema de validación dinámico
-const createFormSchema = (idType: string, identification: Identification[]) => {
-    const selected = identification.find(i => String(i.id) === idType)
-    const tipo = selected?.type?.toUpperCase()
-
-    let idNumberValidation = z.string().min(1, "Número de identificación es requerido")
-
-    if (tipo === "DNI") {
-        idNumberValidation = idNumberValidation
-            .length(8, "El DNI debe tener exactamente 8 dígitos")
-            .regex(/^\d+$/, "El DNI solo debe contener números")
-    } else if (tipo === "RUC") {
-        idNumberValidation = idNumberValidation
-            .length(11, "El RUC debe tener exactamente 11 dígitos")
-            .regex(/^\d+$/, "El RUC solo debe contener números")
-    }
-
-    return z.object({
-        idType: z.string().min(1, "Tipo de identificación es requerido"),
-        idNumber: idNumberValidation,
-        fullName: z.string().min(3, "Nombre es requerido"),
-        age: z.string()
-            .min(1, "Edad es requerida")
-            .refine((val) => {
-                const num = parseInt(val)
-                return !isNaN(num) && num >= 1 && num <= 120
-            }, "Edad es requerido"),
-        gender: z.enum(["masculino", "femenino"], {
-            required_error: "Sexo es requerido"
-        }),
-        weight: z.string()
-            .min(1, "Peso es requerido")
-            .refine((val) => {
-                const num = parseFloat(val)
-                return !isNaN(num) && num >= 1 && num <= 300
-            }, "Peso es requerido"),
-        symptoms: z.string().min(3, "Debe ingresar al menos un síntoma"),
-        allergies: z.string(),
-        diseases: z.string(),
-        pregnancy: z.enum(["si", "no"]),
-        currentMedication: z.string(),
-        symptomDuration: z.string()
-            .min(1, "Duración de síntomas es requerida")
-            .refine((val) => {
-                const num = parseInt(val)
-                return !isNaN(num) && num >= 1 && num <= 365
-            }, "Duración de síntomas es requerida"),
-        severity: z.preprocess(
-            (val) => val === "" ? undefined : val,
-            z.enum(["leve", "moderada", "severa"], {
-                required_error: "Severidad es requerida"
-            })
-        )
-    })
-}
-
-interface FormRecommendation {
-    idType: string
-    idNumber: string
-    fullName: string
-    age: string
-    gender: string
-    weight: string
-    symptoms: string
-    allergies: string
-    diseases: string
-    pregnancy: string
-    currentMedication: string
-    symptomDuration: string
-    severity: string
-}
-
-export interface Recommendation {
-    medication: string
-    form: string
-    via: string
-    amount_value: number
-    amount_unit: string
-    every_hour: number
-    duration_days: number
-    moment: string
-    instructions: string
-    warnings: string[]
-}
+} from 'lucide-react'
+import RecommendationResult from './recommendationResult'
+import { useIdentification } from '@/hooks/useIdentification'
+import { z } from 'zod'
+import { FormRecommendation, Recommendation } from '@/types/recommendation'
+import { createFormSchema } from '@/utils/recommendation'
 
 const RecommendationForm = () => {
     const [formRecommendation, setFormRecommendation] = useState<FormRecommendation>({
-        idType: "",
-        idNumber: "",
-        fullName: "",
-        age: "",
-        gender: "masculino",
-        weight: "",
-        symptoms: "",
-        allergies: "",
-        diseases: "",
-        pregnancy: "no",
-        currentMedication: "",
-        symptomDuration: "",
-        severity: "",
+        idType: '',
+        idNumber: '',
+        fullName: '',
+        age: '',
+        gender: 'masculino',
+        weight: '',
+        symptoms: '',
+        allergies: '',
+        diseases: '',
+        pregnancy: 'no',
+        currentMedication: '',
+        symptomDuration: '',
+        severity: '',
     })
     const [isLoading, setIsLoading] = useState(false)
     const [recomendaciones, setRecomendaciones] = useState<Recommendation[] | null>(null)
     const [isSearching, setIsSearching] = useState(false)
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
-    const [lastSearchedId, setLastSearchedId] = useState<string>("")
+    const [lastSearchedId, setLastSearchedId] = useState<string>('')
     const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
 
     const { identification, fetchIdentification, searchPersonDni, searchPersonRuc } = useIdentification()
@@ -149,7 +60,6 @@ const RecommendationForm = () => {
         fetchIdentification()
     }, [fetchIdentification])
 
-    // Validar si el número de identificación es válido según el tipo
     const isValidIdNumber = useMemo(() => {
         if (!formRecommendation.idType || !formRecommendation.idNumber) return false
 
@@ -157,9 +67,9 @@ const RecommendationForm = () => {
         const tipo = selected?.type?.toUpperCase()
         const numero = formRecommendation.idNumber.trim()
 
-        if (tipo === "DNI") {
+        if (tipo === 'DNI') {
             return /^\d{8}$/.test(numero)
-        } else if (tipo === "RUC") {
+        } else if (tipo === 'RUC') {
             return /^\d{11}$/.test(numero)
         }
 
@@ -179,13 +89,13 @@ const RecommendationForm = () => {
             const tipo = selected?.type?.toUpperCase()
             const numero = Number(formRecommendation.idNumber)
 
-            if (tipo === "DNI") {
+            if (tipo === 'DNI') {
                 const result = await searchPersonDni(numero)
                 if (result?.full_name) {
                     setFormRecommendation(prev => ({ ...prev, fullName: result.full_name }))
                     setLastSearchedId(formRecommendation.idNumber)
                 }
-            } else if (tipo === "RUC") {
+            } else if (tipo === 'RUC') {
                 const result = await searchPersonRuc(numero)
                 if (result?.razon_social) {
                     setFormRecommendation(prev => ({ ...prev, fullName: result.razon_social }))
@@ -203,18 +113,15 @@ const RecommendationForm = () => {
         await performSearch()
     }
 
-    // Auto-búsqueda con debounce
     useEffect(() => {
-        // Limpiar timer anterior
         if (debounceTimerRef.current) {
             clearTimeout(debounceTimerRef.current)
         }
 
-        // Si el número es válido y diferente al último buscado, programar búsqueda
         if (isValidIdNumber && formRecommendation.idNumber !== lastSearchedId) {
             debounceTimerRef.current = setTimeout(() => {
                 performSearch()
-            }, 1500) // Esperar 1.5 segundos después de que el usuario deje de escribir
+            }, 1500)
         }
 
         return () => {
@@ -229,26 +136,23 @@ const RecommendationForm = () => {
     ) => {
         const { name, value } = e.target
 
-        // Si cambia el tipo de ID, limpiar número y nombre
-        if (name === "idType") {
+        if (name === 'idType') {
             setFormRecommendation((prev) => ({
                 ...prev,
                 [name]: value,
-                idNumber: "",
-                fullName: ""
+                idNumber: '',
+                fullName: ''
             }))
-            setLastSearchedId("")
-        } else if (name === "idNumber") {
-            // Si cambia el número, resetear el lastSearchedId si es diferente
+            setLastSearchedId('')
+        } else if (name === 'idNumber') {
             if (value !== lastSearchedId) {
-                setLastSearchedId("")
+                setLastSearchedId('')
             }
             setFormRecommendation((prev) => ({ ...prev, [name]: value }))
         } else {
             setFormRecommendation((prev) => ({ ...prev, [name]: value }))
         }
 
-        // Limpiar error del campo cuando el usuario escribe
         if (validationErrors[name]) {
             setValidationErrors(prev => {
                 const newErrors = { ...prev }
@@ -259,19 +163,18 @@ const RecommendationForm = () => {
     }
 
     const handleSelectChange = (name: string, value: string) => {
-        if (name === "idType") {
+        if (name === 'idType') {
             setFormRecommendation((prev) => ({
                 ...prev,
                 [name]: value,
-                idNumber: "",
-                fullName: ""
+                idNumber: '',
+                fullName: ''
             }))
-            setLastSearchedId("")
+            setLastSearchedId('')
         } else {
             setFormRecommendation((prev) => ({ ...prev, [name]: value }))
         }
 
-        // Limpiar error del campo cuando el usuario cambia la selección
         if (validationErrors[name]) {
             setValidationErrors(prev => {
                 const newErrors = { ...prev }
@@ -303,21 +206,21 @@ const RecommendationForm = () => {
 
     const processDataForBackend = (data: FormRecommendation) => {
         const sintomasArray = data.symptoms
-            .split(",")
+            .split(',')
             .map((s) => s.trim())
             .filter((s) => s.length > 0)
 
         const alergiasArray = data.allergies
-            .split(",")
+            .split(',')
             .map((a) => a.trim())
             .filter((a) => a.length > 0)
 
         const enfermedadesArray = data.diseases
-            .split(",")
+            .split(',')
             .map((e) => e.trim())
             .filter((e) => e.length > 0)
 
-        const embarazoValue = data.gender === "femenino" ? data.pregnancy === "si" : null
+        const embarazoValue = data.gender === 'femenino' ? data.pregnancy === 'si' : null
 
         return {
             age: Number.parseInt(data.age),
@@ -336,7 +239,6 @@ const RecommendationForm = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
-        // Validar formulario antes de enviar
         if (!validateForm()) {
             return
         }
@@ -345,7 +247,6 @@ const RecommendationForm = () => {
 
         try {
             const backendData = processDataForBackend(formRecommendation)
-            console.log("Datos para backend:", backendData)
 
             const response = await fetch('/api/gemini', {
                 method: 'POST',
@@ -359,12 +260,10 @@ const RecommendationForm = () => {
 
             const data = await response.json()
 
-            console.log("Respuesta del backend:", data)
-
             setRecomendaciones(data)
 
         } catch (error) {
-            console.error("Error al generar recomendación:", error)
+            console.error('Error al generar recomendación:', error)
         } finally {
             setIsLoading(false)
         }
@@ -372,45 +271,45 @@ const RecommendationForm = () => {
 
     const resetForm = () => {
         setFormRecommendation({
-            idType: "",
-            idNumber: "",
-            fullName: "",
-            age: "",
-            gender: "masculino",
-            weight: "",
-            symptoms: "",
-            allergies: "",
-            diseases: "",
-            pregnancy: "no",
-            currentMedication: "",
-            symptomDuration: "",
-            severity: "",
+            idType: '',
+            idNumber: '',
+            fullName: '',
+            age: '',
+            gender: 'masculino',
+            weight: '',
+            symptoms: '',
+            allergies: '',
+            diseases: '',
+            pregnancy: 'no',
+            currentMedication: '',
+            symptomDuration: '',
+            severity: '',
         })
         setRecomendaciones(null)
         setValidationErrors({})
-        setLastSearchedId("")
+        setLastSearchedId('')
     }
 
     return (
         <>
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                <Card className="dark:bg-gray-900/80 dark:border-gray-800">
-                    <CardContent className="pt-6">
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <div className="flex items-center gap-2">
-                                        <IdCard className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                                        <Label htmlFor="idType" className="text-gray-700 dark:text-gray-300">
-                                            Tipo de Identificación <span className="text-red-500">*</span>
+            <div className='grid grid-cols-1 xl:grid-cols-2 gap-6'>
+                <Card className='dark:bg-gray-900/80 dark:border-gray-800'>
+                    <CardContent className='pt-6'>
+                        <form onSubmit={handleSubmit} className='space-y-4'>
+                            <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                                <div className='space-y-2'>
+                                    <div className='flex items-center gap-2'>
+                                        <IdCard className='h-5 w-5 text-gray-500 dark:text-gray-400' />
+                                        <Label htmlFor='idType' className='text-gray-700 dark:text-gray-300'>
+                                            Tipo de Identificación <span className='text-red-500'>*</span>
                                         </Label>
                                     </div>
                                     <Select
                                         value={formRecommendation.idType}
-                                        onValueChange={(value) => handleSelectChange("idType", value)}
+                                        onValueChange={(value) => handleSelectChange('idType', value)}
                                     >
-                                        <SelectTrigger className="dark:bg-gray-800 dark:border-gray-700">
-                                            <SelectValue placeholder="Seleccionar" />
+                                        <SelectTrigger className='dark:bg-gray-800 dark:border-gray-700'>
+                                            <SelectValue placeholder='Seleccionar' />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {identification.map((item) => (
@@ -421,313 +320,313 @@ const RecommendationForm = () => {
                                         </SelectContent>
                                     </Select>
                                     {validationErrors.idType && (
-                                        <p className="text-sm text-red-500">{validationErrors.idType}</p>
+                                        <p className='text-sm text-red-500'>{validationErrors.idType}</p>
                                     )}
                                 </div>
 
-                                <div className="space-y-2">
-                                    <div className="flex items-center gap-2">
-                                        <Hash className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                                        <Label htmlFor="idNumber" className="text-gray-700 dark:text-gray-300">
-                                            Número de Identificación <span className="text-red-500">*</span>
+                                <div className='space-y-2'>
+                                    <div className='flex items-center gap-2'>
+                                        <Hash className='h-5 w-5 text-gray-500 dark:text-gray-400' />
+                                        <Label htmlFor='idNumber' className='text-gray-700 dark:text-gray-300'>
+                                            Número de Identificación <span className='text-red-500'>*</span>
                                         </Label>
                                     </div>
 
-                                    <div className="flex items-center gap-2">
+                                    <div className='flex items-center gap-2'>
                                         <Input
-                                            id="idNumber"
-                                            name="idNumber"
+                                            id='idNumber'
+                                            name='idNumber'
                                             value={formRecommendation.idNumber}
                                             onChange={handleChange}
-                                            className="dark:bg-gray-800 dark:border-gray-700"
+                                            className='dark:bg-gray-800 dark:border-gray-700'
                                             placeholder={
                                                 formRecommendation.idType ?
-                                                    (identification.find(i => String(i.id) === formRecommendation.idType)?.type?.toUpperCase() === "DNI"
-                                                        ? "8 dígitos"
-                                                        : "11 dígitos")
-                                                    : ""
+                                                    (identification.find(i => String(i.id) === formRecommendation.idType)?.type?.toUpperCase() === 'DNI'
+                                                        ? '8 dígitos'
+                                                        : '11 dígitos')
+                                                    : ''
                                             }
                                         />
 
                                         <Button
-                                            type="button"
+                                            type='button'
                                             onClick={handleSearch}
-                                            className="bg-primary hover:bg-secondary text-white"
+                                            className='bg-primary hover:bg-secondary text-white'
                                             disabled={!canSearch || isSearching}
                                         >
                                             {isSearching ? (
                                                 <>
-                                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                    <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                                                     Buscando...
                                                 </>
                                             ) : (
-                                                "Buscar"
+                                                'Buscar'
                                             )}
                                         </Button>
                                     </div>
                                     {validationErrors.idNumber && (
-                                        <p className="text-sm text-red-500">{validationErrors.idNumber}</p>
+                                        <p className='text-sm text-red-500'>{validationErrors.idNumber}</p>
                                     )}
                                 </div>
                             </div>
 
-                            <div className="space-y-2">
-                                <div className="flex items-center gap-2">
-                                    <User className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                                    <Label htmlFor="fullName" className="text-gray-700 dark:text-gray-300">
-                                        Nombre Completo <span className="text-red-500">*</span>
+                            <div className='space-y-2'>
+                                <div className='flex items-center gap-2'>
+                                    <User className='h-5 w-5 text-gray-500 dark:text-gray-400' />
+                                    <Label htmlFor='fullName' className='text-gray-700 dark:text-gray-300'>
+                                        Nombre Completo <span className='text-red-500'>*</span>
                                     </Label>
                                 </div>
 
                                 <Input
-                                    id="fullName"
-                                    name="fullName"
+                                    id='fullName'
+                                    name='fullName'
                                     value={formRecommendation.fullName}
                                     onChange={handleChange}
-                                    className="dark:bg-gray-800 dark:border-gray-700"
+                                    className='dark:bg-gray-800 dark:border-gray-700'
                                 />
                                 {validationErrors.fullName && (
-                                    <p className="text-sm text-red-500">{validationErrors.fullName}</p>
+                                    <p className='text-sm text-red-500'>{validationErrors.fullName}</p>
                                 )}
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                <div className="space-y-2">
-                                    <div className="flex items-center gap-2">
-                                        <Hourglass className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                                        <Label htmlFor="age" className="text-gray-700 dark:text-gray-300">
-                                            Edad <span className="text-red-500">*</span>
+                            <div className='grid grid-cols-1 sm:grid-cols-3 gap-4'>
+                                <div className='space-y-2'>
+                                    <div className='flex items-center gap-2'>
+                                        <Hourglass className='h-5 w-5 text-gray-500 dark:text-gray-400' />
+                                        <Label htmlFor='age' className='text-gray-700 dark:text-gray-300'>
+                                            Edad <span className='text-red-500'>*</span>
                                         </Label>
                                     </div>
 
                                     <Input
-                                        id="age"
-                                        name="age"
-                                        type="number"
-                                        min="1"
-                                        max="120"
+                                        id='age'
+                                        name='age'
+                                        type='number'
+                                        min='1'
+                                        max='120'
                                         value={formRecommendation.age}
                                         onChange={handleChange}
-                                        className="dark:bg-gray-800 dark:border-gray-700"
+                                        className='dark:bg-gray-800 dark:border-gray-700'
                                     />
                                     {validationErrors.age && (
-                                        <p className="text-sm text-red-500">{validationErrors.age}</p>
+                                        <p className='text-sm text-red-500'>{validationErrors.age}</p>
                                     )}
                                 </div>
 
-                                <div className="space-y-2">
-                                    <div className="flex items-center gap-2">
-                                        <Venus className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                                        <Label htmlFor="gender" className="text-gray-700 dark:text-gray-300">
-                                            Sexo <span className="text-red-500">*</span>
+                                <div className='space-y-2'>
+                                    <div className='flex items-center gap-2'>
+                                        <Venus className='h-5 w-5 text-gray-500 dark:text-gray-400' />
+                                        <Label htmlFor='gender' className='text-gray-700 dark:text-gray-300'>
+                                            Sexo <span className='text-red-500'>*</span>
                                         </Label>
                                     </div>
 
-                                    <Select value={formRecommendation.gender} onValueChange={(value) => handleSelectChange("gender", value)}>
-                                        <SelectTrigger className="dark:bg-gray-800 dark:border-gray-700">
-                                            <SelectValue placeholder="Seleccionar" />
+                                    <Select value={formRecommendation.gender} onValueChange={(value) => handleSelectChange('gender', value)}>
+                                        <SelectTrigger className='dark:bg-gray-800 dark:border-gray-700'>
+                                            <SelectValue placeholder='Seleccionar' />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="masculino">Masculino</SelectItem>
-                                            <SelectItem value="femenino">Femenino</SelectItem>
+                                            <SelectItem value='masculino'>Masculino</SelectItem>
+                                            <SelectItem value='femenino'>Femenino</SelectItem>
                                         </SelectContent>
                                     </Select>
                                     {validationErrors.gender && (
-                                        <p className="text-sm text-red-500">{validationErrors.gender}</p>
+                                        <p className='text-sm text-red-500'>{validationErrors.gender}</p>
                                     )}
                                 </div>
 
-                                <div className="space-y-2">
-                                    <div className="flex items-center gap-2">
-                                        <Weight className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                                        <Label htmlFor="weight" className="text-gray-700 dark:text-gray-300">
-                                            Peso (kg) <span className="text-red-500">*</span>
+                                <div className='space-y-2'>
+                                    <div className='flex items-center gap-2'>
+                                        <Weight className='h-5 w-5 text-gray-500 dark:text-gray-400' />
+                                        <Label htmlFor='weight' className='text-gray-700 dark:text-gray-300'>
+                                            Peso (kg) <span className='text-red-500'>*</span>
                                         </Label>
                                     </div>
 
                                     <Input
-                                        id="weight"
-                                        name="weight"
-                                        type="number"
-                                        min="1"
-                                        max="300"
-                                        step="0.1"
+                                        id='weight'
+                                        name='weight'
+                                        type='number'
+                                        min='1'
+                                        max='300'
+                                        step='0.1'
                                         value={formRecommendation.weight}
                                         onChange={handleChange}
-                                        className="dark:bg-gray-800 dark:border-gray-700"
+                                        className='dark:bg-gray-800 dark:border-gray-700'
                                     />
                                     {validationErrors.weight && (
-                                        <p className="text-sm text-red-500">{validationErrors.weight}</p>
+                                        <p className='text-sm text-red-500'>{validationErrors.weight}</p>
                                     )}
                                 </div>
                             </div>
 
-                            <div className="space-y-2">
-                                <div className="flex items-center gap-2">
-                                    <Thermometer className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                                    <Label htmlFor="symptoms" className="text-gray-700 dark:text-gray-300">
-                                        Síntomas <span className="text-red-500">*</span>
+                            <div className='space-y-2'>
+                                <div className='flex items-center gap-2'>
+                                    <Thermometer className='h-5 w-5 text-gray-500 dark:text-gray-400' />
+                                    <Label htmlFor='symptoms' className='text-gray-700 dark:text-gray-300'>
+                                        Síntomas <span className='text-red-500'>*</span>
                                     </Label>
                                 </div>
 
                                 <Textarea
-                                    id="symptoms"
-                                    name="symptoms"
+                                    id='symptoms'
+                                    name='symptoms'
                                     value={formRecommendation.symptoms}
                                     onChange={handleChange}
-                                    placeholder="Ej: dolor de cabeza, fiebre, tos"
-                                    className="min-h-[80px] dark:bg-gray-800 dark:border-gray-700"
+                                    placeholder='Ej: dolor de cabeza, fiebre, tos'
+                                    className='min-h-[80px] dark:bg-gray-800 dark:border-gray-700'
                                 />
                                 {validationErrors.symptoms && (
-                                    <p className="text-sm text-red-500">{validationErrors.symptoms}</p>
+                                    <p className='text-sm text-red-500'>{validationErrors.symptoms}</p>
                                 )}
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <div className="flex items-center gap-2">
-                                        <AlertTriangle className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                                        <Label htmlFor="allergies" className="text-gray-700 dark:text-gray-300">
+                            <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                                <div className='space-y-2'>
+                                    <div className='flex items-center gap-2'>
+                                        <AlertTriangle className='h-5 w-5 text-gray-500 dark:text-gray-400' />
+                                        <Label htmlFor='allergies' className='text-gray-700 dark:text-gray-300'>
                                             Alergias
                                         </Label>
                                     </div>
 
                                     <Textarea
-                                        id="allergies"
-                                        name="allergies"
+                                        id='allergies'
+                                        name='allergies'
                                         value={formRecommendation.allergies}
                                         onChange={handleChange}
-                                        placeholder="Ej: penicilina, aspirina (dejar vacío si no tiene)"
-                                        className="min-h-[80px] dark:bg-gray-800 dark:border-gray-700"
+                                        placeholder='Ej: penicilina, aspirina (dejar vacío si no tiene)'
+                                        className='min-h-[80px] dark:bg-gray-800 dark:border-gray-700'
                                     />
                                 </div>
 
-                                <div className="space-y-2">
-                                    <div className="flex items-center gap-2">
-                                        <Stethoscope className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                                        <Label htmlFor="diseases" className="text-gray-700 dark:text-gray-300">
+                                <div className='space-y-2'>
+                                    <div className='flex items-center gap-2'>
+                                        <Stethoscope className='h-5 w-5 text-gray-500 dark:text-gray-400' />
+                                        <Label htmlFor='diseases' className='text-gray-700 dark:text-gray-300'>
                                             Enfermedades Preexistentes
                                         </Label>
                                     </div>
 
                                     <Textarea
-                                        id="diseases"
-                                        name="diseases"
+                                        id='diseases'
+                                        name='diseases'
                                         value={formRecommendation.diseases}
                                         onChange={handleChange}
-                                        placeholder="Ej: diabetes, hipertensión (dejar vacío si no tiene)"
-                                        className="min-h-[80px] dark:bg-gray-800 dark:border-gray-700"
+                                        placeholder='Ej: diabetes, hipertensión (dejar vacío si no tiene)'
+                                        className='min-h-[80px] dark:bg-gray-800 dark:border-gray-700'
                                     />
                                 </div>
                             </div>
 
-                            {formRecommendation.gender === "femenino" && (
-                                <div className="space-y-2">
-                                    <div className="flex items-center gap-2">
-                                        <Baby className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                                        <Label htmlFor="pregnancy" className="text-gray-700 dark:text-gray-300">
-                                            ¿Está embarazada? <span className="text-red-500">*</span>
+                            {formRecommendation.gender === 'femenino' && (
+                                <div className='space-y-2'>
+                                    <div className='flex items-center gap-2'>
+                                        <Baby className='h-5 w-5 text-gray-500 dark:text-gray-400' />
+                                        <Label htmlFor='pregnancy' className='text-gray-700 dark:text-gray-300'>
+                                            ¿Está embarazada? <span className='text-red-500'>*</span>
                                         </Label>
                                     </div>
 
-                                    <Select value={formRecommendation.pregnancy} onValueChange={(value) => handleSelectChange("pregnancy", value)}>
-                                        <SelectTrigger className="dark:bg-gray-800 dark:border-gray-700">
+                                    <Select value={formRecommendation.pregnancy} onValueChange={(value) => handleSelectChange('pregnancy', value)}>
+                                        <SelectTrigger className='dark:bg-gray-800 dark:border-gray-700'>
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="no">No</SelectItem>
-                                            <SelectItem value="si">Sí</SelectItem>
+                                            <SelectItem value='no'>No</SelectItem>
+                                            <SelectItem value='si'>Sí</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
                             )}
 
-                            <div className="space-y-2">
-                                <div className="flex items-center gap-2">
-                                    <Pill className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                                    <Label htmlFor="currentMedication" className="text-gray-700 dark:text-gray-300">
+                            <div className='space-y-2'>
+                                <div className='flex items-center gap-2'>
+                                    <Pill className='h-5 w-5 text-gray-500 dark:text-gray-400' />
+                                    <Label htmlFor='currentMedication' className='text-gray-700 dark:text-gray-300'>
                                         Medicación Actual
                                     </Label>
                                 </div>
 
                                 <Textarea
-                                    id="currentMedication"
-                                    name="currentMedication"
+                                    id='currentMedication'
+                                    name='currentMedication'
                                     value={formRecommendation.currentMedication}
                                     onChange={handleChange}
-                                    placeholder="Ej: enalapril 10 mg cada 12 horas (dejar vacío si no consume medicamentos)"
-                                    className="min-h-[80px] dark:bg-gray-800 dark:border-gray-700"
+                                    placeholder='Ej: enalapril 10 mg cada 12 horas (dejar vacío si no consume medicamentos)'
+                                    className='min-h-[80px] dark:bg-gray-800 dark:border-gray-700'
                                 />
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <div className="flex items-center gap-2">
-                                        <Clock className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                                        <Label htmlFor="symptomDuration" className="text-gray-700 dark:text-gray-300">
-                                            Duración de los síntomas (días) <span className="text-red-500">*</span>
+                            <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                                <div className='space-y-2'>
+                                    <div className='flex items-center gap-2'>
+                                        <Clock className='h-5 w-5 text-gray-500 dark:text-gray-400' />
+                                        <Label htmlFor='symptomDuration' className='text-gray-700 dark:text-gray-300'>
+                                            Duración de los síntomas (días) <span className='text-red-500'>*</span>
                                         </Label>
                                     </div>
 
                                     <Input
-                                        id="symptomDuration"
-                                        name="symptomDuration"
-                                        type="number"
-                                        min="1"
-                                        max="365"
+                                        id='symptomDuration'
+                                        name='symptomDuration'
+                                        type='number'
+                                        min='1'
+                                        max='365'
                                         value={formRecommendation.symptomDuration}
                                         onChange={handleChange}
-                                        className="dark:bg-gray-800 dark:border-gray-700"
+                                        className='dark:bg-gray-800 dark:border-gray-700'
                                     />
                                     {validationErrors.symptomDuration && (
-                                        <p className="text-sm text-red-500">{validationErrors.symptomDuration}</p>
+                                        <p className='text-sm text-red-500'>{validationErrors.symptomDuration}</p>
                                     )}
                                 </div>
 
-                                <div className="space-y-2">
-                                    <div className="flex items-center gap-2">
-                                        <AlertCircle className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                                        <Label htmlFor="severity" className="text-gray-700 dark:text-gray-300">
-                                            Severidad de los sintomas <span className="text-red-500">*</span>
+                                <div className='space-y-2'>
+                                    <div className='flex items-center gap-2'>
+                                        <AlertCircle className='h-5 w-5 text-gray-500 dark:text-gray-400' />
+                                        <Label htmlFor='severity' className='text-gray-700 dark:text-gray-300'>
+                                            Severidad de los sintomas <span className='text-red-500'>*</span>
                                         </Label>
                                     </div>
 
                                     <Select
                                         value={formRecommendation.severity}
-                                        onValueChange={(value) => handleSelectChange("severity", value)}
+                                        onValueChange={(value) => handleSelectChange('severity', value)}
                                     >
-                                        <SelectTrigger className="dark:bg-gray-800 dark:border-gray-700">
-                                            <SelectValue placeholder="Seleccionar" />
+                                        <SelectTrigger className='dark:bg-gray-800 dark:border-gray-700'>
+                                            <SelectValue placeholder='Seleccionar' />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="leve">Leve</SelectItem>
-                                            <SelectItem value="moderada">Moderada</SelectItem>
-                                            <SelectItem value="severa">Severa</SelectItem>
+                                            <SelectItem value='leve'>Leve</SelectItem>
+                                            <SelectItem value='moderada'>Moderada</SelectItem>
+                                            <SelectItem value='severa'>Severa</SelectItem>
                                         </SelectContent>
                                     </Select>
                                     {validationErrors.severity && (
-                                        <p className="text-sm text-red-500">{validationErrors.severity}</p>
+                                        <p className='text-sm text-red-500'>{validationErrors.severity}</p>
                                     )}
                                 </div>
                             </div>
 
-                            <div className="flex justify-end space-x-3 pt-4">
+                            <div className='flex justify-end space-x-3 pt-4'>
                                 <Button
-                                    type="button"
-                                    variant="outline"
+                                    type='button'
+                                    variant='outline'
                                     onClick={resetForm}
-                                    className="dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800 bg-transparent"
+                                    className='dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800 bg-transparent'
                                 >
                                     Limpiar
                                 </Button>
-                                <Button type="submit" className="bg-primary hover:bg-secondary text-white" disabled={isLoading}>
+                                <Button type='submit' className='bg-primary hover:bg-secondary text-white' disabled={isLoading}>
                                     {isLoading ? (
                                         <>
-                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                                             Generando...
                                         </>
                                     ) : (
-                                        "Generar Recomendación"
+                                        'Generar Recomendación'
                                     )}
                                 </Button>
                             </div>
@@ -748,10 +647,10 @@ const RecommendationForm = () => {
                         isLoading={false}
                     />
                 ) : (
-                    <Card className="dark:bg-gray-900/80 dark:border-gray-800 flex flex-col items-center justify-center p-8 h-full">
-                        <FileText className="h-16 w-16 text-gray-300 dark:text-gray-600 mb-4" />
-                        <h3 className="text-xl font-medium text-gray-700 dark:text-gray-300 mb-2">Sin Recomendaciones</h3>
-                        <p className="text-gray-500 dark:text-gray-400 text-center">
+                    <Card className='dark:bg-gray-900/80 dark:border-gray-800 flex flex-col items-center justify-center p-8 h-full'>
+                        <FileText className='h-16 w-16 text-gray-300 dark:text-gray-600 mb-4' />
+                        <h3 className='text-xl font-medium text-gray-700 dark:text-gray-300 mb-2'>Sin Recomendaciones</h3>
+                        <p className='text-gray-500 dark:text-gray-400 text-center'>
                             Complete el formulario y genere una recomendación para ver los resultados aquí.
                         </p>
                     </Card>
