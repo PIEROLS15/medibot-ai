@@ -1,7 +1,21 @@
+import Header from '@/components/layout/header'
+import RecommendationForm from '@/components/layout/recommendation/recommendationForm'
+
 const Recommendation = () => {
     return (
-        <>Vista de Recomendacioones</>
-    );
+        <>
+            <div className="space-y-6 pt-10">
+                <Header
+                    title="Recomendación de medicamentos"
+                    description="Complete el formulario con sus datos para generar una recomendación"
+                    button={null}
+                />
+
+                <RecommendationForm />
+
+            </div>
+        </>
+    )
 }
 
-export default Recommendation;
+export default Recommendation
