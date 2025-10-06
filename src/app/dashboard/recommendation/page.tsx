@@ -7,7 +7,7 @@ const Recommendation = () => {
             <div className="space-y-6 pt-10">
                 <Header
                     title="Recomendación de medicamentos"
-                    description="Complete el formulario con los datos del cliente para generar una recomendación"
+                    description="Complete el formulario con sus datos para generar una recomendación"
                     button={null}
                 />
 

@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -30,41 +30,66 @@ import RecommendationResult from "./recommendationResult"
 import { useIdentification } from "@/hooks/useIdentification"
 import { z } from "zod"
 
-// Schema de validación solo para el frontend
-const formSchema = z.object({
-    idType: z.string().min(1, "Tipo de identificación es requerido"),
-    idNumber: z.string().min(1, "Número de identificación es requerido"),
-    fullName: z.string().min(3, "Nombre completo debe tener al menos 3 caracteres"),
-    age: z.string()
-        .min(1, "Edad es requerida")
-        .refine((val) => {
-            const num = parseInt(val)
-            return !isNaN(num) && num >= 1 && num <= 120
-        }, "Edad debe estar entre 1 y 120 años"),
-    gender: z.enum(["masculino", "femenino"], {
-        required_error: "Sexo es requerido"
-    }),
-    weight: z.string()
-        .min(1, "Peso es requerido")
-        .refine((val) => {
-            const num = parseFloat(val)
-            return !isNaN(num) && num >= 1 && num <= 300
-        }, "Peso debe estar entre 1 y 300 kg"),
-    symptoms: z.string().min(3, "Debe ingresar al menos un síntoma"),
-    allergies: z.string(),
-    diseases: z.string(),
-    pregnancy: z.enum(["si", "no"]),
-    currentMedication: z.string(),
-    symptomDuration: z.string()
-        .min(1, "Duración de síntomas es requerida")
-        .refine((val) => {
-            const num = parseInt(val)
-            return !isNaN(num) && num >= 1 && num <= 365
-        }, "Duración debe estar entre 1 y 365 días"),
-    severity: z.enum(["leve", "moderada", "severa"], {
-        required_error: "Severidad es requerida"
+interface Identification {
+    id: string | number
+    type?: string
+}
+
+// Schema de validación dinámico
+const createFormSchema = (idType: string, identification: Identification[]) => {
+    const selected = identification.find(i => String(i.id) === idType)
+    const tipo = selected?.type?.toUpperCase()
+
+    let idNumberValidation = z.string().min(1, "Número de identificación es requerido")
+
+    if (tipo === "DNI") {
+        idNumberValidation = idNumberValidation
+            .length(8, "El DNI debe tener exactamente 8 dígitos")
+            .regex(/^\d+$/, "El DNI solo debe contener números")
+    } else if (tipo === "RUC") {
+        idNumberValidation = idNumberValidation
+            .length(11, "El RUC debe tener exactamente 11 dígitos")
+            .regex(/^\d+$/, "El RUC solo debe contener números")
+    }
+
+    return z.object({
+        idType: z.string().min(1, "Tipo de identificación es requerido"),
+        idNumber: idNumberValidation,
+        fullName: z.string().min(3, "Nombre es requerido"),
+        age: z.string()
+            .min(1, "Edad es requerida")
+            .refine((val) => {
+                const num = parseInt(val)
+                return !isNaN(num) && num >= 1 && num <= 120
+            }, "Edad es requerido"),
+        gender: z.enum(["masculino", "femenino"], {
+            required_error: "Sexo es requerido"
+        }),
+        weight: z.string()
+            .min(1, "Peso es requerido")
+            .refine((val) => {
+                const num = parseFloat(val)
+                return !isNaN(num) && num >= 1 && num <= 300
+            }, "Peso es requerido"),
+        symptoms: z.string().min(3, "Debe ingresar al menos un síntoma"),
+        allergies: z.string(),
+        diseases: z.string(),
+        pregnancy: z.enum(["si", "no"]),
+        currentMedication: z.string(),
+        symptomDuration: z.string()
+            .min(1, "Duración de síntomas es requerida")
+            .refine((val) => {
+                const num = parseInt(val)
+                return !isNaN(num) && num >= 1 && num <= 365
+            }, "Duración de síntomas es requerida"),
+        severity: z.preprocess(
+            (val) => val === "" ? undefined : val,
+            z.enum(["leve", "moderada", "severa"], {
+                required_error: "Severidad es requerida"
+            })
+        )
     })
-})
+}
 
 interface FormRecommendation {
     idType: string
@@ -115,22 +140,42 @@ const RecommendationForm = () => {
     const [recomendaciones, setRecomendaciones] = useState<Recommendation[] | null>(null)
     const [isSearching, setIsSearching] = useState(false)
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
+    const [lastSearchedId, setLastSearchedId] = useState<string>("")
+    const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
+
     const { identification, fetchIdentification, searchPersonDni, searchPersonRuc } = useIdentification()
 
     useEffect(() => {
         fetchIdentification()
     }, [fetchIdentification])
 
-    const canSearch = useMemo(() => {
-        return Boolean(formRecommendation.idType) && formRecommendation.idNumber.trim().length > 0
-    }, [formRecommendation.idType, formRecommendation.idNumber])
+    // Validar si el número de identificación es válido según el tipo
+    const isValidIdNumber = useMemo(() => {
+        if (!formRecommendation.idType || !formRecommendation.idNumber) return false
 
-    const handleSearch = async () => {
-        if (!canSearch) return
+        const selected = identification.find(i => String(i.id) === formRecommendation.idType)
+        const tipo = selected?.type?.toUpperCase()
+        const numero = formRecommendation.idNumber.trim()
+
+        if (tipo === "DNI") {
+            return /^\d{8}$/.test(numero)
+        } else if (tipo === "RUC") {
+            return /^\d{11}$/.test(numero)
+        }
+
+        return numero.length > 0
+    }, [formRecommendation.idType, formRecommendation.idNumber, identification])
+
+    const canSearch = useMemo(() => {
+        return isValidIdNumber && formRecommendation.idNumber !== lastSearchedId
+    }, [isValidIdNumber, formRecommendation.idNumber, lastSearchedId])
+
+    const performSearch = useCallback(async () => {
+        if (!isValidIdNumber) return
+
         setIsSearching(true)
         try {
             const selected = identification.find(i => String(i.id) === formRecommendation.idType)
-
             const tipo = selected?.type?.toUpperCase()
             const numero = Number(formRecommendation.idNumber)
 
@@ -138,28 +183,70 @@ const RecommendationForm = () => {
                 const result = await searchPersonDni(numero)
                 if (result?.full_name) {
                     setFormRecommendation(prev => ({ ...prev, fullName: result.full_name }))
+                    setLastSearchedId(formRecommendation.idNumber)
                 }
             } else if (tipo === "RUC") {
                 const result = await searchPersonRuc(numero)
                 if (result?.razon_social) {
                     setFormRecommendation(prev => ({ ...prev, fullName: result.razon_social }))
+                    setLastSearchedId(formRecommendation.idNumber)
                 }
-            } else {
-                console.warn("Tipo de identificación no soportado:", tipo)
             }
-
         } catch (err) {
             console.error(err)
         } finally {
             setIsSearching(false)
         }
+    }, [formRecommendation.idType, formRecommendation.idNumber, identification, isValidIdNumber, searchPersonDni, searchPersonRuc])
+
+    const handleSearch = async () => {
+        await performSearch()
     }
+
+    // Auto-búsqueda con debounce
+    useEffect(() => {
+        // Limpiar timer anterior
+        if (debounceTimerRef.current) {
+            clearTimeout(debounceTimerRef.current)
+        }
+
+        // Si el número es válido y diferente al último buscado, programar búsqueda
+        if (isValidIdNumber && formRecommendation.idNumber !== lastSearchedId) {
+            debounceTimerRef.current = setTimeout(() => {
+                performSearch()
+            }, 1500) // Esperar 1.5 segundos después de que el usuario deje de escribir
+        }
+
+        return () => {
+            if (debounceTimerRef.current) {
+                clearTimeout(debounceTimerRef.current)
+            }
+        }
+    }, [formRecommendation.idNumber, isValidIdNumber, lastSearchedId, performSearch])
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | { target: { name: string; value: string } },
     ) => {
         const { name, value } = e.target
-        setFormRecommendation((prev) => ({ ...prev, [name]: value }))
+
+        // Si cambia el tipo de ID, limpiar número y nombre
+        if (name === "idType") {
+            setFormRecommendation((prev) => ({
+                ...prev,
+                [name]: value,
+                idNumber: "",
+                fullName: ""
+            }))
+            setLastSearchedId("")
+        } else if (name === "idNumber") {
+            // Si cambia el número, resetear el lastSearchedId si es diferente
+            if (value !== lastSearchedId) {
+                setLastSearchedId("")
+            }
+            setFormRecommendation((prev) => ({ ...prev, [name]: value }))
+        } else {
+            setFormRecommendation((prev) => ({ ...prev, [name]: value }))
+        }
 
         // Limpiar error del campo cuando el usuario escribe
         if (validationErrors[name]) {
@@ -172,7 +259,17 @@ const RecommendationForm = () => {
     }
 
     const handleSelectChange = (name: string, value: string) => {
-        setFormRecommendation((prev) => ({ ...prev, [name]: value }))
+        if (name === "idType") {
+            setFormRecommendation((prev) => ({
+                ...prev,
+                [name]: value,
+                idNumber: "",
+                fullName: ""
+            }))
+            setLastSearchedId("")
+        } else {
+            setFormRecommendation((prev) => ({ ...prev, [name]: value }))
+        }
 
         // Limpiar error del campo cuando el usuario cambia la selección
         if (validationErrors[name]) {
@@ -186,7 +283,8 @@ const RecommendationForm = () => {
 
     const validateForm = (): boolean => {
         try {
-            formSchema.parse(formRecommendation)
+            const schema = createFormSchema(formRecommendation.idType, identification)
+            schema.parse(formRecommendation)
             setValidationErrors({})
             return true
         } catch (error) {
@@ -290,6 +388,7 @@ const RecommendationForm = () => {
         })
         setRecomendaciones(null)
         setValidationErrors({})
+        setLastSearchedId("")
     }
 
     return (
@@ -341,9 +440,21 @@ const RecommendationForm = () => {
                                             value={formRecommendation.idNumber}
                                             onChange={handleChange}
                                             className="dark:bg-gray-800 dark:border-gray-700"
+                                            placeholder={
+                                                formRecommendation.idType ?
+                                                    (identification.find(i => String(i.id) === formRecommendation.idType)?.type?.toUpperCase() === "DNI"
+                                                        ? "8 dígitos"
+                                                        : "11 dígitos")
+                                                    : ""
+                                            }
                                         />
 
-                                        <Button type="button" onClick={handleSearch} className="bg-primary hover:bg-secondary text-white" disabled={!canSearch || isSearching}>
+                                        <Button
+                                            type="button"
+                                            onClick={handleSearch}
+                                            className="bg-primary hover:bg-secondary text-white"
+                                            disabled={!canSearch || isSearching}
+                                        >
                                             {isSearching ? (
                                                 <>
                                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -577,7 +688,7 @@ const RecommendationForm = () => {
                                     <div className="flex items-center gap-2">
                                         <AlertCircle className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                                         <Label htmlFor="severity" className="text-gray-700 dark:text-gray-300">
-                                            Severidad <span className="text-red-500">*</span>
+                                            Severidad de los sintomas <span className="text-red-500">*</span>
                                         </Label>
                                     </div>
 
