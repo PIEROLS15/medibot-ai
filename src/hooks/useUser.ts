@@ -92,6 +92,7 @@ export function useUser() {
             const data = await res.json()
             if (res.ok) {
                 toast({
+                    variant: 'success',
                     title: 'Éxito',
                     description: `El usuario ${userData.firstName} ${userData.lastName} se ha ${newStatus ? 'activado' : 'desactivado'} correctamente`,
                     duration: 3000,
@@ -129,12 +130,14 @@ export function useUser() {
             const data = await res.json()
             if (res.ok) {
                 toast({
+                    variant: 'success',
                     title: 'Éxito',
                     description: `El usuario ${userData.firstName} ${userData.lastName} se ha actualizado correctamente`,
                     duration: 3000,
                 })
             } else {
                 toast({
+                    variant: 'destructive',
                     title: 'Error',
                     description: data.message || 'No se pudo actualizar el estado del usuario',
                     duration: 3000,
@@ -143,6 +146,7 @@ export function useUser() {
         } catch (error) {
             console.error('Error al actualizar el usuario:', error)
             toast({
+                variant: 'destructive',
                 title: 'Error',
                 description: 'Hubo un problema al actualizar el usuario',
                 duration: 3000,
