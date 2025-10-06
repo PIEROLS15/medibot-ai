@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Download, AlertTriangle, Loader2 } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
 import { typeIdentification } from '@/utils/recommendation'
 import { generatePDF } from '@/utils/pdfGenerator'
 import { Recommendation, UserData } from '@/types/recommendation'
@@ -16,6 +17,7 @@ interface RecomendacionResultadoProps {
 }
 
 export default function RecommendationResult({ recommendations, userData, isLoading }: RecomendacionResultadoProps) {
+    const { toast } = useToast()
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
 
     if (isLoading) {
@@ -35,18 +37,36 @@ export default function RecommendationResult({ recommendations, userData, isLoad
         ? null
         : recommendations?.reason || null
 
+    const hasRecommendations = recs.length > 0
+
     const handleGeneratePDF = async () => {
+        if (!hasRecommendations) return
+
         setIsGeneratingPDF(true)
         try {
             await generatePDF(userData, recs, reason)
+
+            toast({
+                variant: "success",
+                title: 'PDF generado exitosamente',
+                description: `El archivo se ha descargado correctamente`,
+                duration: 3000,
+            })
         } catch (error) {
             console.error("Error al generar PDF:", error)
+
+            toast({
+                variant: "destructive",
+                title: 'Error al generar PDF',
+                description: 'Hubo un problema al generar el archivo. Por favor intente nuevamente.',
+                duration: 3000,
+            })
         } finally {
             setIsGeneratingPDF(false)
         }
     }
-    return (
 
+    return (
         <Card className="dark:bg-gray-900/80 dark:border-gray-800">
             <CardHeader className="pb-2">
                 <CardTitle className="flex items-center justify-between">
@@ -54,9 +74,9 @@ export default function RecommendationResult({ recommendations, userData, isLoad
                     <div className="flex space-x-2">
                         <Button
                             size="sm"
-                            className="bg-primary hover:bg-secondary text-white"
+                            className="bg-primary hover:bg-secondary text-white disabled:opacity-50 disabled:cursor-not-allowed"
                             onClick={handleGeneratePDF}
-                            disabled={isGeneratingPDF}
+                            disabled={!hasRecommendations || isGeneratingPDF}
                         >
                             <Download className="h-4 w-4 mr-1" />
                             {isGeneratingPDF ? "Generando..." : "Guardar PDF"}

@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useToast } from '@/hooks/use-toast'
 import {
     Loader2,
     FileText,
@@ -32,6 +33,7 @@ import { FormRecommendation, Recommendation } from '@/types/recommendation'
 import { createFormSchema } from '@/utils/recommendation'
 
 const RecommendationForm = () => {
+    const { toast } = useToast()
     const [formRecommendation, setFormRecommendation] = useState<FormRecommendation>({
         idType: '',
         idNumber: '',
@@ -94,20 +96,54 @@ const RecommendationForm = () => {
                 if (result?.full_name) {
                     setFormRecommendation(prev => ({ ...prev, fullName: result.full_name }))
                     setLastSearchedId(formRecommendation.idNumber)
+
+                    toast({
+                        variant: "success",
+                        title: 'Usuario encontrado',
+                        description: `DNI encontrado: ${result.full_name}`,
+                        duration: 3000,
+                    })
+                } else {
+                    toast({
+                        variant: "destructive",
+                        title: 'Usuario no encontrado',
+                        description: 'No se encontró información para este DNI',
+                        duration: 3000,
+                    })
                 }
             } else if (tipo === 'RUC') {
                 const result = await searchPersonRuc(numero)
                 if (result?.razon_social) {
                     setFormRecommendation(prev => ({ ...prev, fullName: result.razon_social }))
                     setLastSearchedId(formRecommendation.idNumber)
+
+                    toast({
+                        variant: "success",
+                        title: 'Usuario encontrado',
+                        description: `RUC encontrado: ${result.razon_social}`,
+                        duration: 3000,
+                    })
+                } else {
+                    toast({
+                        variant: "destructive",
+                        title: 'Usuario no encontrado',
+                        description: 'No se encontró información para este RUC',
+                        duration: 3000,
+                    })
                 }
             }
         } catch (err) {
             console.error(err)
+            toast({
+                variant: "destructive",
+                title: 'Error',
+                description: 'Hubo un problema al buscar el usuario',
+                duration: 3000,
+            })
         } finally {
             setIsSearching(false)
         }
-    }, [formRecommendation.idType, formRecommendation.idNumber, identification, isValidIdNumber, searchPersonDni, searchPersonRuc])
+    }, [formRecommendation.idType, formRecommendation.idNumber, identification, isValidIdNumber, searchPersonDni, searchPersonRuc, toast])
 
     const handleSearch = async () => {
         await performSearch()
@@ -240,6 +276,12 @@ const RecommendationForm = () => {
         e.preventDefault()
 
         if (!validateForm()) {
+            toast({
+                variant: "destructive",
+                title: 'Error de validación',
+                description: 'Por favor complete todos los campos requeridos correctamente',
+                duration: 3000,
+            })
             return
         }
 
@@ -259,11 +301,24 @@ const RecommendationForm = () => {
             }
 
             const data = await response.json()
-
             setRecomendaciones(data)
+
+            // Toast de éxito al generar recomendación
+            toast({
+                variant: "success",
+                title: 'Recomendación generada',
+                description: `Se generó exitosamente la recomendación para ${formRecommendation.fullName}`,
+                duration: 4000,
+            })
 
         } catch (error) {
             console.error('Error al generar recomendación:', error)
+            toast({
+                variant: "destructive",
+                title: 'Error',
+                description: 'Hubo un problema al generar la recomendación. Por favor intente nuevamente.',
+                duration: 3000,
+            })
         } finally {
             setIsLoading(false)
         }
