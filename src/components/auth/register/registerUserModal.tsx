@@ -17,23 +17,8 @@ import {
 import { Loader2, Eye, EyeOff, CheckCircle } from 'lucide-react'
 import { z } from 'zod'
 import { useUser } from '@/hooks/useUser'
+import { registerSchema } from '@/utils/user'
 
-const registrationSchema = z.object({
-    firstName: z.string().min(1, 'El nombre es obligatorio'),
-    lastName: z.string().min(1, 'Los apellidos son obligatorios'),
-    email: z
-        .string()
-        .email('El correo electrónico no es válido')
-        .min(1, 'El correo electrónico es obligatorio'),
-    password: z
-        .string()
-        .min(6, 'La contraseña debe tener al menos 6 caracteres')
-        .nonempty('La contraseña es obligatoria'),
-    confirmPassword: z.string().min(1, 'Confirmar contraseña es obligatorio'),
-}).refine((data) => data.password === data.confirmPassword, {
-    message: 'Las contraseñas no coinciden',
-    path: ['confirmPassword'],
-})
 
 interface RegisterUserModalProps {
     open: boolean
@@ -68,7 +53,7 @@ const RegisterUserModal = ({ open, onOpenChange }: RegisterUserModalProps) => {
         e.preventDefault()
 
         try {
-            registrationSchema.parse(formData)
+            registerSchema.parse(formData)
 
             setErrors({})
             setIsLoading(true)

@@ -36,6 +36,9 @@ export const initialData: SeedData = {
         },
         {
             name: RoleType.Pharmacist
+        },
+        {
+            name: RoleType.Visitor
         }
     ],
     identifications: [
@@ -68,7 +71,7 @@ export const initialData: SeedData = {
             lastName: 'Llanos',
             email: 'diego@gmail.com',
             password: bcryptjs.hashSync('123456'),
-            roleId: 2,
+            roleId: 3,
             isActive: true
         },
     ]

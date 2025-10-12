@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "RoleType" AS ENUM ('Administrator', 'Pharmacist');
+CREATE TYPE "RoleType" AS ENUM ('Administrator', 'Pharmacist', 'Visitor');
 
 -- CreateEnum
 CREATE TYPE "TypeIdentification" AS ENUM ('DNI', 'RUC');
@@ -17,6 +17,7 @@ CREATE TABLE "User" (
     "resetToken" TEXT,
     "resetTokenExpiresAt" TIMESTAMP(3),
     "roleId" INTEGER NOT NULL,
+    "googleId" TEXT,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -84,6 +85,9 @@ CREATE TABLE "ResultOptions" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_googleId_key" ON "User"("googleId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Role_name_key" ON "Role"("name");

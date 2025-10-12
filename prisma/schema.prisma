@@ -16,6 +16,7 @@ model User {
   resetToken          String?
   resetTokenExpiresAt DateTime?
   roleId              Int
+  googleId            String?   @unique
   isActive            Boolean   @default(true)
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
@@ -72,6 +73,7 @@ model ResultOptions {
 enum RoleType {
   Administrator
   Pharmacist
+  Visitor
 }
 
 enum TypeIdentification {
