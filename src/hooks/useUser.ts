@@ -46,23 +46,26 @@ export function useUser() {
                 },
                 body: JSON.stringify(userData),
             })
-            if (!res.ok) throw new Error('Error al registrar el usuario')
             const data = await res.json()
-            if (res.ok) {
-                toast({
-                    variant: 'success',
-                    title: 'Éxito',
-                    description: `El usuario ${userData.firstName + ' ' + userData.lastName} se ha creado correctamente`,
-                    duration: 3000,
-                })
-            } else {
+
+            if (!res.ok) {
                 toast({
                     variant: 'destructive',
                     title: 'Error',
                     description: data.message || 'No se pudo registrar el usuario',
                     duration: 3000,
                 })
+                return false
             }
+
+            toast({
+                variant: 'success',
+                title: 'Éxito',
+                description: `El usuario ${userData.firstName} ${userData.lastName} se ha creado correctamente`,
+                duration: 3000,
+            })
+            return true
+
         } catch (error) {
             console.error('Error registering user:', error)
             toast({

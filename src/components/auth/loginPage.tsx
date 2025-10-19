@@ -36,9 +36,6 @@ const LoginPage = () => {
             <CardContent>
                 <LoginForm />
                 <div className='mt-6 text-center text-sm text-gray-600 dark:text-gray-400'>
-                    <p>Sistema exclusivo para farmacéuticos autorizados</p>
-                </div>
-                <div className='mt-6 text-center text-sm text-gray-600 dark:text-gray-400'>
                     <p>
                         ¿No tienes una cuenta?{' '}
                         <Link

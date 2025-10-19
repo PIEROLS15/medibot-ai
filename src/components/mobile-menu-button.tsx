@@ -5,9 +5,9 @@ import { Menu } from "lucide-react"
 import { useSidebar } from "@/contexts/sidebarContext"
 
 const MobileMenuButton = () => {
-    const { setMobileOpen, isMobile } = useSidebar()
+    const { mobileOpen, setMobileOpen, isMobile } = useSidebar()
 
-    if (!isMobile) return null
+    if (!isMobile || mobileOpen) return null
 
     return (
         <Button

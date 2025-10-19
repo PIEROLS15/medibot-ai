@@ -3,7 +3,7 @@ export interface User {
     firstName: string
     lastName: string
     email: string
-    password: string
+    password?: string
     resetToken?: string
     resetTokenExpiresAt?: string
     roleId: number
