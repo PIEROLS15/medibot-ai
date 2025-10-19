@@ -1,7 +1,6 @@
 'use client'
 
 import type React from 'react'
-import { z } from 'zod'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,22 +9,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator'
 import ThemeToggle from '@/components/ui/themeToggle'
 import { Loader2, Mail, Lock, Pill, User, Eye, EyeOff } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { signIn } from 'next-auth/react'
-import { useUser } from '@/hooks/useUser'
 import GoogleButton from '@/components/ui/buttonGoogle'
-import { registerSchema } from "@/lib/validations/auth"
-
-interface Errors {
-    [key: string]: string | undefined
-}
+import { useLoginGoogle } from '@/hooks/useLoginGoogle'
+import { useRegister } from '@/hooks/useRegister'
 
 export default function RegistroForm() {
-    const router = useRouter()
-    const { toast } = useToast()
-
+    const { handleGoogleSignIn, isLoadingGoogle } = useLoginGoogle()
+    const { isLoading, errors, handleRegister } = useRegister()
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -35,88 +26,16 @@ export default function RegistroForm() {
     })
     const [showPassword, setShowPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-    const [isLoading, setIsLoading] = useState(false)
-    const [isLoadingGoogle, setIsLoadingGoogle] = useState(false)
-    const [errors, setErrors] = useState<Errors>({})
-    const { registerUser } = useUser()
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target
         setFormData((prev) => ({ ...prev, [name]: value }))
     }
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
-
-        try {
-            registerSchema.parse(formData)
-            setErrors({})
-            setIsLoading(true)
-
-            const userData = {
-                firstName: formData.firstName,
-                lastName: formData.lastName,
-                email: formData.email,
-                password: formData.password,
-            }
-
-            const success = await registerUser(userData)
-
-            if (!success) return
-
-            // Iniciar sesión automáticamente después del registro
-            const signInRes = await signIn('credentials', {
-                redirect: false,
-                email: formData.email,
-                password: formData.password,
-            })
-
-            if (signInRes?.ok) {
-                setFormData({
-                    firstName: '',
-                    lastName: '',
-                    email: '',
-                    password: '',
-                    confirmPassword: '',
-                })
-
-                router.push('/dashboard')
-            } else {
-                toast({
-                    variant: 'success',
-                    title: 'Cuenta creada',
-                    description: 'Por favor, inicia sesión con tus credenciales.',
-                    duration: 3000,
-                })
-                router.push('/login')
-            }
-        } catch (err) {
-            if (err instanceof z.ZodError) {
-                const formattedErrors: Errors = {}
-                err.errors.forEach((error) => {
-                    formattedErrors[error.path[0]] = error.message
-                })
-                setErrors(formattedErrors)
-            } else {
-                toast({
-                    variant: 'destructive',
-                    title: 'Error del servidor',
-                    description: err instanceof Error ? err.message : 'Error al registrar la cuenta. Intente nuevamente.',
-                    duration: 4000,
-                })
-            }
-        } finally {
-            setIsLoading(false)
-        }
+        handleRegister(formData)
     }
-
-    const handleGoogleSignIn = () => {
-        setIsLoadingGoogle(true)
-        signIn('google', {
-            callbackUrl: '/dashboard'
-        })
-    }
-
 
     return (
         <Card className='shadow-lg border-0 bg-white/80 backdrop-blur-sm dark:bg-gray-900/80 dark:border-gray-800'>
@@ -289,7 +208,7 @@ export default function RegistroForm() {
                     <GoogleButton
                         isLoading={isLoadingGoogle}
                         onClick={handleGoogleSignIn}
-                        label="Registrarse con Google"
+                        label='Registrarse con Google'
                     />
 
                 </div>

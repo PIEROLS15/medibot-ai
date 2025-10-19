@@ -1,8 +1,6 @@
 'use client'
 
 import type React from 'react'
-import { signIn } from 'next-auth/react'
-import { useToast } from '@/hooks/use-toast'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,86 +8,25 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { Loader2, Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import ForgotPasswordModal from '@/components/auth/forgotPasswordModal'
-import { useRouter } from 'next/navigation'
 import GoogleButton from '@/components/ui/buttonGoogle'
-import { z } from 'zod'
-import { loginSchema } from "@/lib/validations/auth"
-
-interface Errors {
-    [key: string]: string | undefined
-}
+import { useLoginGoogle } from '@/hooks/useLoginGoogle'
+import { useLogin } from '@/hooks/useLogin'
 
 const LoginForm = () => {
     const [showForgotPassword, setShowForgotPassword] = useState(false)
-    const router = useRouter()
     const [formData, setFormData] = useState({ email: '', password: '' })
     const [showPassword, setShowPassword] = useState(false)
-    const [isLoading, setIsLoading] = useState(false)
-    const [isLoadingGoogle, setIsLoadingGoogle] = useState(false)
-    const [errors, setErrors] = useState<Errors>({})
-    const { toast } = useToast()
+    const { handleGoogleSignIn, isLoadingGoogle } = useLoginGoogle()
+    const { isLoading, errors, handleLogin } = useLogin()
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target
-        setFormData((prev) => ({ ...prev, [name]: value }))
-    }
-
-    const handleLogin = async (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
-
-        try {
-            loginSchema.parse(formData)
-            setErrors({})
-            setIsLoading(true)
-
-            const res = await signIn('credentials', {
-                redirect: false,
-                email: formData.email,
-                password: formData.password,
-            })
-
-            setIsLoading(false)
-
-            if (res?.ok) {
-
-                router.push('/dashboard')
-            } else {
-                toast({
-                    title: 'Error de autenticación',
-                    description:
-                        res?.error || 'Email o contraseña incorrectos. Verifica tus credenciales.',
-                    variant: 'destructive',
-                    duration: 4000,
-                })
-            }
-        } catch (err) {
-            setIsLoading(false)
-
-            if (err instanceof z.ZodError) {
-                const formattedErrors: Errors = {}
-                err.errors.forEach((error) => {
-                    formattedErrors[error.path[0]] = error.message
-                })
-                setErrors(formattedErrors)
-            } else {
-                toast({
-                    variant: 'destructive',
-                    title: 'Error inesperado',
-                    description: 'Ocurrió un problema al iniciar sesión. Intenta nuevamente.',
-                    duration: 4000,
-                })
-            }
-        }
-    }
-
-    const handleGoogleSignIn = () => {
-        setIsLoadingGoogle(true)
-        signIn('google', { callbackUrl: '/dashboard' })
+        handleLogin(formData)
     }
 
     return (
         <>
-            <form onSubmit={handleLogin} className='space-y-4'>
+            <form onSubmit={handleSubmit} className='space-y-4'>
                 <div className='space-y-2'>
                     <Label htmlFor='email' className='text-gray-700 dark:text-gray-300 font-medium'>
                         Correo Electrónico
@@ -102,7 +39,9 @@ const LoginForm = () => {
                             type='email'
                             placeholder='Ingresa tu correo electrónico'
                             value={formData.email}
-                            onChange={handleChange}
+                            onChange={(e) =>
+                                setFormData({ ...formData, email: e.target.value })
+                            }
                             className='pl-10 border-gray-300 focus:border-primary focus:ring-primary dark:border-gray-700 dark:bg-gray-800 dark:text-white'
                         />
                     </div>
@@ -121,7 +60,9 @@ const LoginForm = () => {
                             type={showPassword ? 'text' : 'password'}
                             placeholder='Ingresa tu contraseña'
                             value={formData.password}
-                            onChange={handleChange}
+                            onChange={(e) =>
+                                setFormData({ ...formData, password: e.target.value })
+                            }
                             className='pl-10 pr-10 border-gray-300 focus:border-primary focus:ring-primary dark:border-gray-700 dark:bg-gray-800 dark:text-white'
                         />
                         <button
@@ -175,7 +116,7 @@ const LoginForm = () => {
                 <GoogleButton
                     isLoading={isLoadingGoogle}
                     onClick={handleGoogleSignIn}
-                    label="Iniciar sesión con Google"
+                    label='Iniciar sesión con Google'
                 />
             </div>
 

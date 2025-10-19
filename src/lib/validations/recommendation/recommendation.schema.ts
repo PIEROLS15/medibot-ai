@@ -1,4 +1,4 @@
-import { z } from "zod"
+import { z } from 'zod'
 
 const hasRange = (s?: string) =>
     !!s && /(\d+\s*[--]\s*\d+|\b\d+\s*a\s+\d+\b)/i.test(s)
@@ -6,7 +6,7 @@ const hasRange = (s?: string) =>
 const noRangeString = z
     .string()
     .min(1)
-    .refine((val) => !hasRange(val), { message: "No debe contener rangos" })
+    .refine((val) => !hasRange(val), { message: 'No debe contener rangos' })
 
 export const recommendationSchema = z.object({
     medication: z.string().min(1),
