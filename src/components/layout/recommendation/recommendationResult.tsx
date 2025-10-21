@@ -55,7 +55,7 @@ export default function RecommendationResult({
                 variant: "success",
                 title: "PDF generado exitosamente",
                 description: `El archivo se ha descargado correctamente`,
-                duration: 3000,
+                duration: 2000,
             })
         } catch (error) {
             console.error("Error al generar PDF:", error)
@@ -63,7 +63,7 @@ export default function RecommendationResult({
                 variant: "destructive",
                 title: "Error al generar PDF",
                 description: "Hubo un problema al generar el archivo. Por favor intente nuevamente.",
-                duration: 3000,
+                duration: 2000,
             })
         } finally {
             setIsGeneratingPDF(false)

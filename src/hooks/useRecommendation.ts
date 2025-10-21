@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import { z } from 'zod'
 import { useToast } from '@/hooks/use-toast'
 import { useIdentification } from '@/hooks/useIdentification'
@@ -34,7 +34,6 @@ export const useRecommendation = () => {
     const [isSearching, setIsSearching] = useState(false)
     const [errors, setErrors] = useState<Record<string, string>>({})
     const [lastSearchedId, setLastSearchedId] = useState('')
-    const debounceRef = useRef<NodeJS.Timeout | null>(null)
 
     //Cargar tipos de identificación
     useEffect(() => {
@@ -99,19 +98,6 @@ export const useRecommendation = () => {
             setIsSearching(false)
         }
     }, [form.idType, form.idNumber, identification, isValidIdNumber, searchPersonDni, searchPersonRuc, toast])
-
-    //Búsqueda automática con debounce
-    useEffect(() => {
-        if (debounceRef.current) clearTimeout(debounceRef.current)
-
-        if (isValidIdNumber && form.idNumber !== lastSearchedId) {
-            debounceRef.current = setTimeout(() => performSearch(), 1500)
-        }
-
-        return () => {
-            if (debounceRef.current) clearTimeout(debounceRef.current)
-        }
-    }, [form.idNumber, isValidIdNumber, lastSearchedId, performSearch])
 
     //Validar formulario con Zod
     const validateForm = (): boolean => {
@@ -204,7 +190,7 @@ export const useRecommendation = () => {
         }
     }
 
-    // 🔹 Reiniciar formulario
+    //Reiniciar formulario
     const resetForm = () => {
         setForm({
             idType: '',

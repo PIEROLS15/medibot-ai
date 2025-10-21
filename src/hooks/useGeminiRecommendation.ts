@@ -56,7 +56,7 @@ export const useGeminiRecommendation = (): UseGeminiRecommendationResult => {
                 description: userName
                     ? `Se generó exitosamente la recomendación para ${userName}`
                     : 'Recomendación creada correctamente',
-                duration: 3000,
+                duration: 2000,
             })
 
             return {
@@ -73,7 +73,7 @@ export const useGeminiRecommendation = (): UseGeminiRecommendationResult => {
                 variant: 'destructive',
                 title: 'Error al generar recomendación',
                 description: message,
-                duration: 3000,
+                duration: 2000,
             })
 
             return null
