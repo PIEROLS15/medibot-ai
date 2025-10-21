@@ -1,13 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { User } from '@/types/user'
+import { User, RegisterUser } from '@/types/user'
 import { useToast } from '@/hooks/use-toast'
-
-type RegisterUserData = {
-    firstName: string;
-    lastName: string;
-    email: string;
-    password: string;
-}
 
 export function useUser() {
     const [user, setUser] = useState<User[]>([])
@@ -43,7 +36,7 @@ export function useUser() {
         }
     }, [toast])
 
-    const registerUser = useCallback(async (userData: RegisterUserData) => {
+    const registerUser = useCallback(async (userData: RegisterUser) => {
         setLoading(true)
         try {
             const res = await fetch('/api/auth/register', {
@@ -53,23 +46,26 @@ export function useUser() {
                 },
                 body: JSON.stringify(userData),
             })
-            if (!res.ok) throw new Error('Error al registrar el usuario')
             const data = await res.json()
-            if (res.ok) {
-                toast({
-                    variant: 'success',
-                    title: 'Éxito',
-                    description: `El usuario ${userData.firstName + ' ' + userData.lastName} se ha creado correctamente`,
-                    duration: 3000,
-                })
-            } else {
+
+            if (!res.ok) {
                 toast({
                     variant: 'destructive',
                     title: 'Error',
                     description: data.message || 'No se pudo registrar el usuario',
                     duration: 3000,
                 })
+                return false
             }
+
+            toast({
+                variant: 'success',
+                title: 'Éxito',
+                description: `El usuario ${userData.firstName} ${userData.lastName} se ha creado correctamente`,
+                duration: 3000,
+            })
+            return true
+
         } catch (error) {
             console.error('Error registering user:', error)
             toast({

@@ -1,7 +1,6 @@
 'use client'
 
 import type React from 'react'
-
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,33 +14,11 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog'
 import { Loader2, Eye, EyeOff, CheckCircle } from 'lucide-react'
-import { z } from 'zod'
-import { useUser } from '@/hooks/useUser'
-
-const registrationSchema = z.object({
-    firstName: z.string().min(1, 'El nombre es obligatorio'),
-    lastName: z.string().min(1, 'Los apellidos son obligatorios'),
-    email: z
-        .string()
-        .email('El correo electrónico no es válido')
-        .min(1, 'El correo electrónico es obligatorio'),
-    password: z
-        .string()
-        .min(6, 'La contraseña debe tener al menos 6 caracteres')
-        .nonempty('La contraseña es obligatoria'),
-    confirmPassword: z.string().min(1, 'Confirmar contraseña es obligatorio'),
-}).refine((data) => data.password === data.confirmPassword, {
-    message: 'Las contraseñas no coinciden',
-    path: ['confirmPassword'],
-})
+import { useRegister } from '@/hooks/useRegister'
 
 interface RegisterUserModalProps {
     open: boolean
     onOpenChange: (open: boolean) => void
-}
-
-interface Errors {
-    [key: string]: string | undefined
 }
 
 const RegisterUserModal = ({ open, onOpenChange }: RegisterUserModalProps) => {
@@ -54,49 +31,17 @@ const RegisterUserModal = ({ open, onOpenChange }: RegisterUserModalProps) => {
     })
     const [showPassword, setShowPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-    const [isLoading, setIsLoading] = useState(false)
-    const [isSuccess, setIsSuccess] = useState(false)
-    const [errors, setErrors] = useState<Errors>({})
-    const { registerUser } = useUser()
+    const { isSuccess, isLoading, errors, handleRegisterModal } = useRegister()
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target
         setFormData((prev) => ({ ...prev, [name]: value }))
     }
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
-
-        try {
-            registrationSchema.parse(formData)
-
-            setErrors({})
-            setIsLoading(true)
-
-            const userData = {
-                firstName: formData.firstName,
-                lastName: formData.lastName,
-                email: formData.email,
-                password: formData.password,
-            }
-
-            await registerUser(userData)
-
-            setIsSuccess(true)
-
-        } catch (err) {
-            if (err instanceof z.ZodError) {
-                const formattedErrors: Errors = {}
-                err.errors.forEach((error) => {
-                    formattedErrors[error.path[0]] = error.message
-                })
-                setErrors(formattedErrors)
-            }
-        } finally {
-            setIsLoading(false)
-        }
+        handleRegisterModal(formData)
     }
-
 
     const handleClose = () => {
         if (!isLoading) {
@@ -109,14 +54,12 @@ const RegisterUserModal = ({ open, onOpenChange }: RegisterUserModalProps) => {
             })
             setShowPassword(false)
             setShowConfirmPassword(false)
-            setIsSuccess(false)
-            setErrors({})
             onOpenChange(false)
         }
     }
 
     return (
-        <Dialog open={open} onOpenChange={handleClose}>
+        <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className='sm:max-w-md w-[95vw] max-w-lg mx-auto dark:bg-gray-900 dark:border-gray-800 max-h-[90vh] overflow-y-auto'>
                 <DialogHeader>
                     <DialogTitle className='text-xl font-bold text-gray-900 dark:text-white'>

@@ -1,21 +1,10 @@
-import Header from '@/components/layout/header'
-import RecommendationForm from '@/components/layout/recommendation/recommendationForm'
+import { Suspense } from 'react'
+import RecommendationClient from './RecommendationClient'
 
-const Recommendation = () => {
+export default function Page() {
     return (
-        <>
-            <div className="space-y-6 pt-10">
-                <Header
-                    title="Recomendación de medicamentos"
-                    description="Complete el formulario con sus datos para generar una recomendación"
-                    button={null}
-                />
-
-                <RecommendationForm />
-
-            </div>
-        </>
+        <Suspense fallback={<div>Cargando...</div>}>
+            <RecommendationClient />
+        </Suspense>
     )
 }
-
-export default Recommendation
