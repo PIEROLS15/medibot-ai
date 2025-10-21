@@ -21,7 +21,9 @@ model User {
   isActive            Boolean   @default(true)
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
-  role                Role      @relation(fields: [roleId], references: [id])
+
+  role        Role         @relation(fields: [roleId], references: [id])
+  evaluations Evaluation[] @relation("UserEvaluations")
 }
 
 model Role {
@@ -31,8 +33,69 @@ model Role {
 }
 
 model IdentificationType {
-  id   Int                @id @default(autoincrement())
-  type TypeIdentification @unique
+  id       Int                @id @default(autoincrement())
+  type     TypeIdentification @unique
+  patients Patient[]
+}
+
+model Patient {
+  id                   Int      @id @default(autoincrement())
+  identificationTypeId Int
+  identificationNumber String   @unique
+  fullName             String
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  identificationType IdentificationType @relation(fields: [identificationTypeId], references: [id])
+  evaluations        Evaluation[]
+}
+
+model Evaluation {
+  id                  Int      @id @default(autoincrement())
+  patientId           Int
+  userId              Int
+  age                 Int
+  sex                 String
+  weight              Float
+  symptoms            Json     @db.JsonB
+  allergies           Json?    @db.JsonB
+  preexistingDiseases Json?    @db.JsonB
+  pregnancy           Boolean?
+  currentMedication   String?
+  symptomDuration     Int
+  severity            String
+  createdAt           DateTime @default(now())
+
+  patient        Patient         @relation(fields: [patientId], references: [id])
+  user           User            @relation("UserEvaluations", fields: [userId], references: [id])
+  recommendation Recommendation?
+}
+
+model Recommendation {
+  id           Int      @id @default(autoincrement())
+  evaluationId Int      @unique
+  reason       String?
+  createdAt    DateTime @default(now())
+
+  evaluation  Evaluation                 @relation(fields: [evaluationId], references: [id])
+  medications MedicationRecommendation[]
+}
+
+model MedicationRecommendation {
+  id               Int    @id @default(autoincrement())
+  recommendationId Int
+  medication       String
+  form             String
+  via              String
+  amountValue      Float
+  amountUnit       String
+  everyHour        Int
+  durationDays     Int
+  moment           String
+  instructions     String
+  warnings         Json   @db.JsonB
+
+  recommendation Recommendation @relation(fields: [recommendationId], references: [id])
 }
 
 enum RoleType {
