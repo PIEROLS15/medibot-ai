@@ -30,45 +30,9 @@ model Role {
   users User[]
 }
 
-model Patient {
-  id                   Int                 @id @default(autoincrement())
-  identificationId     Int
-  identificationNumber String              @unique
-  fullName             String
-  age                  Int
-  identification       IdentificationType  @relation(fields: [identificationId], references: [id])
-  medicationHistory    MedicationHistory[]
-}
-
 model IdentificationType {
-  id      Int                @id @default(autoincrement())
-  type    TypeIdentification @unique
-  Patient Patient[]
-}
-
-model Medication {
-  id           Int      @id @default(autoincrement())
-  name         String
-  description  String?
-  sideEffects  String?
-  interactions String?
-  createdAt    DateTime @default(now())
-}
-
-model MedicationHistory {
-  id             Int            @id @default(autoincrement())
-  medicationId   Int
-  createdAt      DateTime       @default(now())
-  resultOptionId Int?
-  patientId      Int
-  resultOption   ResultOptions? @relation(fields: [resultOptionId], references: [id])
-  patient        Patient        @relation(fields: [patientId], references: [id])
-}
-
-model ResultOptions {
-  id                Int                 @id @default(autoincrement())
-  type              TypeResultOptions   @unique
-  medicationHistory MedicationHistory[]
+  id   Int                @id @default(autoincrement())
+  type TypeIdentification @unique
 }
 
 enum RoleType {
@@ -80,9 +44,4 @@ enum RoleType {
 enum TypeIdentification {
   DNI
   RUC
-}
-
-enum TypeResultOptions {
-  Improved
-  No_changes
 }

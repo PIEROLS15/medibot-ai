@@ -1,7 +1,9 @@
+import { Severity, Sex } from '@/lib/validations/recommendation'
+
 //Backend
 export interface MedicalInput {
     age: number
-    sex: "masculino" | "femenino"
+    sex: Sex
     weight?: number | null
     symptoms: string[]
     allergies?: string[] | null
@@ -9,7 +11,7 @@ export interface MedicalInput {
     pregnancy?: boolean | null
     current_medication?: string | null
     duration_days: number | null
-    severity: "leve" | "moderada" | "severa" | null
+    severity: Severity | null
 }
 
 export interface Recommendation {
@@ -36,7 +38,7 @@ export interface FormRecommendation {
     idNumber: string
     fullName: string
     age: string
-    gender: string
+    gender: Sex
     weight: string
     symptoms: string
     allergies: string
@@ -44,7 +46,7 @@ export interface FormRecommendation {
     pregnancy: string
     currentMedication: string
     symptomDuration: string
-    severity: string
+    severity: Severity
 }
 
 export type UserData = Pick<FormRecommendation,
