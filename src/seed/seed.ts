@@ -1,4 +1,4 @@
-import { RoleType, TypeIdentification, TypeResultOptions } from '@prisma/client'
+import { RoleType, TypeIdentification } from '@prisma/client'
 import bcryptjs from 'bcryptjs'
 
 interface SeedRoles {
@@ -7,10 +7,6 @@ interface SeedRoles {
 
 interface SeedIdentificationType {
     type: TypeIdentification
-}
-
-interface SeedResultOptions {
-    type: TypeResultOptions
 }
 
 interface SeedUser {
@@ -26,7 +22,6 @@ interface SeedData {
     roles: SeedRoles[]
     users: SeedUser[]
     identifications: SeedIdentificationType[]
-    resultOptions: SeedResultOptions[]
 }
 
 export const initialData: SeedData = {
@@ -47,14 +42,6 @@ export const initialData: SeedData = {
         },
         {
             type: TypeIdentification.RUC
-        }
-    ],
-    resultOptions: [
-        {
-            type: TypeResultOptions.Improved
-        },
-        {
-            type: TypeResultOptions.No_changes
         }
     ],
     users: [
