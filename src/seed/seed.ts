@@ -1,5 +1,5 @@
 import { RoleType, TypeIdentification } from '@prisma/client'
-import bcryptjs from 'bcryptjs'
+// import bcryptjs from 'bcryptjs'
 
 interface SeedRoles {
     name: RoleType
@@ -9,18 +9,18 @@ interface SeedIdentificationType {
     type: TypeIdentification
 }
 
-interface SeedUser {
-    firstName: string
-    lastName: string
-    email: string
-    password: string
-    roleId: number
-    isActive: boolean
-}
+// interface SeedUser {
+//     firstName: string
+//     lastName: string
+//     email: string
+//     password: string
+//     roleId: number
+//     isActive: boolean
+// }
 
 interface SeedData {
     roles: SeedRoles[]
-    users: SeedUser[]
+    // users: SeedUser[]
     identifications: SeedIdentificationType[]
 }
 
@@ -44,22 +44,22 @@ export const initialData: SeedData = {
             type: TypeIdentification.RUC
         }
     ],
-    users: [
-        {
-            firstName: 'Piero',
-            lastName: 'Llanos',
-            email: 'piero@gmail.com',
-            password: bcryptjs.hashSync('123456'),
-            roleId: 1,
-            isActive: true
-        },
-        {
-            firstName: 'Diego',
-            lastName: 'Llanos',
-            email: 'diego@gmail.com',
-            password: bcryptjs.hashSync('123456'),
-            roleId: 3,
-            isActive: true
-        },
-    ]
+    // users: [
+    //     {
+    //         firstName: 'Piero',
+    //         lastName: 'Llanos',
+    //         email: 'piero@gmail.com',
+    //         password: bcryptjs.hashSync('123456'),
+    //         roleId: 1,
+    //         isActive: true
+    //     },
+    //     {
+    //         firstName: 'Diego',
+    //         lastName: 'Llanos',
+    //         email: 'diego@gmail.com',
+    //         password: bcryptjs.hashSync('123456'),
+    //         roleId: 3,
+    //         isActive: true
+    //     },
+    // ]
 }

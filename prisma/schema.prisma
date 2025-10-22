@@ -8,22 +8,21 @@ datasource db {
 }
 
 model User {
-  id                  Int       @id @default(autoincrement())
+  id                  Int          @id @default(autoincrement())
   firstName           String
   lastName            String
-  email               String    @unique
+  email               String       @unique
   password            String?
   resetToken          String?
   resetTokenExpiresAt DateTime?
   roleId              Int
-  googleId            String?   @unique
+  googleId            String?      @unique
   profileImage        String?
-  isActive            Boolean   @default(true)
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-
-  role        Role         @relation(fields: [roleId], references: [id])
-  evaluations Evaluation[] @relation("UserEvaluations")
+  isActive            Boolean      @default(true)
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+  evaluations         Evaluation[] @relation("UserEvaluations")
+  role                Role         @relation(fields: [roleId], references: [id])
 }
 
 model Role {
@@ -39,50 +38,47 @@ model IdentificationType {
 }
 
 model Patient {
-  id                   Int      @id @default(autoincrement())
+  id                   Int                @id @default(autoincrement())
   identificationTypeId Int
-  identificationNumber String   @unique
+  identificationNumber String             @unique
   fullName             String
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
-
-  identificationType IdentificationType @relation(fields: [identificationTypeId], references: [id])
-  evaluations        Evaluation[]
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  evaluations          Evaluation[]
+  identificationType   IdentificationType @relation(fields: [identificationTypeId], references: [id])
 }
 
 model Evaluation {
-  id                  Int      @id @default(autoincrement())
+  id                  Int             @id @default(autoincrement())
   patientId           Int
   userId              Int
   age                 Int
   sex                 String
   weight              Float
-  symptoms            Json     @db.JsonB
-  allergies           Json?    @db.JsonB
-  preexistingDiseases Json?    @db.JsonB
+  symptoms            Json
+  allergies           Json?
+  preexistingDiseases Json?
   pregnancy           Boolean?
   currentMedication   String?
   symptomDuration     Int
   severity            String
-  createdAt           DateTime @default(now())
-
-  patient        Patient         @relation(fields: [patientId], references: [id])
-  user           User            @relation("UserEvaluations", fields: [userId], references: [id])
-  recommendation Recommendation?
+  createdAt           DateTime        @default(now())
+  patient             Patient         @relation(fields: [patientId], references: [id])
+  user                User            @relation("UserEvaluations", fields: [userId], references: [id])
+  recommendation      Recommendation?
 }
 
 model Recommendation {
-  id           Int      @id @default(autoincrement())
-  evaluationId Int      @unique
+  id           Int                        @id @default(autoincrement())
+  evaluationId Int                        @unique
   reason       String?
-  createdAt    DateTime @default(now())
-
-  evaluation  Evaluation                 @relation(fields: [evaluationId], references: [id])
-  medications MedicationRecommendation[]
+  createdAt    DateTime                   @default(now())
+  medications  MedicationRecommendation[]
+  evaluation   Evaluation                 @relation(fields: [evaluationId], references: [id])
 }
 
 model MedicationRecommendation {
-  id               Int    @id @default(autoincrement())
+  id               Int            @id @default(autoincrement())
   recommendationId Int
   medication       String
   form             String
@@ -93,9 +89,8 @@ model MedicationRecommendation {
   durationDays     Int
   moment           String
   instructions     String
-  warnings         Json   @db.JsonB
-
-  recommendation Recommendation @relation(fields: [recommendationId], references: [id])
+  warnings         Json
+  recommendation   Recommendation @relation(fields: [recommendationId], references: [id])
 }
 
 enum RoleType {
