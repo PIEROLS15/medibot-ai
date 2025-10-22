@@ -32,6 +32,12 @@ export interface MedicalResponse {
     reason: string | null
 }
 
+export interface RecommendationPayload {
+    userId: number
+    form: FormRecommendation
+    recommendationResult: MedicalResponse
+}
+
 //Frontend
 export interface FormRecommendation {
     idType: string

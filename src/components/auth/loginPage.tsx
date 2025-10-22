@@ -3,15 +3,16 @@
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Pill } from 'lucide-react'
 import ThemeToggle from '@/components/ui/themeToggle'
 import LoginForm from './ui/loginForm'
 import { useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 const LoginPage = () => {
     const { status } = useSession()
     const router = useRouter()
+    const logoPath = process.env.NEXT_PUBLIC_LOGO_PATH || '/default_logo.png'
 
     useEffect(() => {
         if (status === 'authenticated') {
@@ -22,8 +23,15 @@ const LoginPage = () => {
     return (
         <Card className='shadow-lg border-0 bg-white/80 backdrop-blur-sm dark:bg-gray-900/80 dark:border-gray-800'>
             <CardHeader className='text-center pb-6'>
-                <div className='mx-auto w-12 h-12 bg-primary rounded-full flex items-center justify-center mb-4'>
-                    <Pill className='w-6 h-6 text-white' />
+                <div className='flex items-center justify-center'>
+                    <Image
+                        src={logoPath}
+                        alt='Medibot AI Logo'
+                        width={128}
+                        height={128}
+                        className='rounded-full'
+                        priority
+                    />
                 </div>
                 <CardTitle className='text-2xl font-bold text-gray-900 dark:text-white'>Iniciar Sesión</CardTitle>
                 <CardDescription className='text-gray-600 dark:text-gray-400'>

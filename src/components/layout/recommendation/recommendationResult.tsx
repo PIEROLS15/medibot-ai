@@ -11,12 +11,16 @@ import { generatePDF } from '@/utils/pdfGenerator'
 import { Recommendation, UserData } from '@/types/recommendation'
 
 interface RecomendacionResultadoProps {
-    recommendations: Recommendation[] | { recommendations: Recommendation[], reason: string | null }
+    recommendations: Recommendation[] | { recommendations: Recommendation[]; reason?: string | null } | null
     userData: UserData
     isLoading?: boolean
 }
 
-export default function RecommendationResult({ recommendations, userData, isLoading }: RecomendacionResultadoProps) {
+export default function RecommendationResult({
+    recommendations,
+    userData,
+    isLoading,
+}: RecomendacionResultadoProps) {
     const { toast } = useToast()
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
 
@@ -29,13 +33,15 @@ export default function RecommendationResult({ recommendations, userData, isLoad
         )
     }
 
-    const recs = Array.isArray(recommendations)
-        ? recommendations
-        : recommendations?.recommendations || []
+    let recs: Recommendation[] = []
+    let reason: string | null = null
 
-    const reason = Array.isArray(recommendations)
-        ? null
-        : recommendations?.reason || null
+    if (Array.isArray(recommendations)) {
+        recs = recommendations
+    } else if (recommendations && typeof recommendations === "object") {
+        recs = recommendations.recommendations ?? []
+        reason = recommendations.reason ?? null
+    }
 
     const hasRecommendations = recs.length > 0
 
@@ -45,21 +51,19 @@ export default function RecommendationResult({ recommendations, userData, isLoad
         setIsGeneratingPDF(true)
         try {
             await generatePDF(userData, recs, reason)
-
             toast({
                 variant: "success",
-                title: 'PDF generado exitosamente',
+                title: "PDF generado exitosamente",
                 description: `El archivo se ha descargado correctamente`,
-                duration: 3000,
+                duration: 2000,
             })
         } catch (error) {
             console.error("Error al generar PDF:", error)
-
             toast({
                 variant: "destructive",
-                title: 'Error al generar PDF',
-                description: 'Hubo un problema al generar el archivo. Por favor intente nuevamente.',
-                duration: 3000,
+                title: "Error al generar PDF",
+                description: "Hubo un problema al generar el archivo. Por favor intente nuevamente.",
+                duration: 2000,
             })
         } finally {
             setIsGeneratingPDF(false)
@@ -84,10 +88,13 @@ export default function RecommendationResult({ recommendations, userData, isLoad
                     </div>
                 </CardTitle>
             </CardHeader>
+
             <CardContent>
                 <div className="space-y-6">
                     <div>
-                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Datos del Cliente</h3>
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                            Datos del Cliente
+                        </h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                             <div>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">Nombre</p>
@@ -101,9 +108,7 @@ export default function RecommendationResult({ recommendations, userData, isLoad
                             </div>
                             <div>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">Identificación</p>
-                                <p className="font-medium text-gray-900 dark:text-white">
-                                    {userData.idNumber}
-                                </p>
+                                <p className="font-medium text-gray-900 dark:text-white">{userData.idNumber}</p>
                             </div>
                             <div>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">Edad</p>
@@ -113,7 +118,9 @@ export default function RecommendationResult({ recommendations, userData, isLoad
                     </div>
 
                     <div>
-                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Síntomas Reportados</h3>
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                            Síntomas Reportados
+                        </h3>
                         <p className="text-gray-700 dark:text-gray-300">{userData.symptoms}</p>
                     </div>
 
@@ -126,15 +133,19 @@ export default function RecommendationResult({ recommendations, userData, isLoad
 
                     {userData.diseases && (
                         <div>
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Enfermedades Preexistentes</h3>
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                                Enfermedades Preexistentes
+                            </h3>
                             <p className="text-gray-700 dark:text-gray-300">{userData.diseases}</p>
                         </div>
                     )}
 
                     <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Medicamentos Recomendados</h3>
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                            Medicamentos Recomendados
+                        </h3>
 
-                        {recs.length > 0 ? (
+                        {hasRecommendations ? (
                             <div className="space-y-6 overflow-hidden">
                                 {recs.map((rec, index) => (
                                     <div
@@ -144,18 +155,19 @@ export default function RecommendationResult({ recommendations, userData, isLoad
                                     >
                                         <div className="flex justify-between items-start mb-2">
                                             <h4 className="font-medium text-primary">
-                                                {rec.medication} {rec.amount_value}{rec.amount_unit}
+                                                {rec.medication} {rec.amount_value}
+                                                {rec.amount_unit}
                                             </h4>
                                         </div>
-
                                         <div className="space-y-3">
                                             <div>
-                                                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Instrucciones:</p>
+                                                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                    Instrucciones:
+                                                </p>
                                                 <p className="text-gray-600 dark:text-gray-400">
                                                     {rec.instructions}, {rec.moment} durante {rec.duration_days} día(s)
                                                 </p>
                                             </div>
-
                                             {rec.warnings?.length > 0 && (
                                                 <div className="space-y-2">
                                                     {rec.warnings.map((w, i) => (
@@ -177,17 +189,19 @@ export default function RecommendationResult({ recommendations, userData, isLoad
                                     <Alert className="flex flex-row items-center gap-2 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-900/50">
                                         <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-500 flex-shrink-0" />
                                         <AlertDescription className="text-red-800 dark:text-red-500">
-                                            Estas recomendaciones son de carácter informativo y no sustituyen la
-                                            valoración médica profesional. Consulte siempre con su médico antes de
-                                            iniciar o modificar un tratamiento.
+                                            Estas recomendaciones son de carácter informativo y no sustituyen la valoración médica profesional.
                                         </AlertDescription>
                                     </Alert>
                                 </div>
                             </div>
                         ) : reason ? (
                             <Alert className="bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-900/50">
-                                <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-500" />
-                                <AlertDescription className="text-red-800 dark:text-red-500">{reason}</AlertDescription>
+                                <div className="flex items-start space-x-2">
+                                    <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-500 flex-shrink-0 mt-0.5" />
+                                    <AlertDescription className="text-red-800 dark:text-red-500 whitespace-pre-line">
+                                        {reason}
+                                    </AlertDescription>
+                                </div>
                             </Alert>
                         ) : (
                             <p className="text-gray-600 dark:text-gray-400">No hay recomendaciones disponibles.</p>

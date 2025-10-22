@@ -9,6 +9,7 @@ import { Prisma } from '@prisma/client'
 declare module 'next-auth' {
     interface Session {
         user: {
+            id: number
             firstName: string
             lastName: string
             email: string
@@ -192,8 +193,8 @@ export const authOptions: NextAuthOptions = {
         },
 
         async jwt({ token, user, account }) {
-
             if (user) {
+                token.id = Number(user.id)
                 token.firstName = user.firstName
                 token.lastName = user.lastName
                 token.roleId = user.roleId
@@ -203,20 +204,24 @@ export const authOptions: NextAuthOptions = {
                 token.role = user.role
             }
 
-            if (account?.provider === 'google' && token.email) {
-                const dbUser = await prisma.user.findUnique({
-                    where: { email: token.email },
-                    include: { role: true },
-                })
+            if (account?.provider === 'google') {
+                const email = token.email || user?.email
+                if (email) {
+                    const dbUser = await prisma.user.findUnique({
+                        where: { email },
+                        include: { role: true },
+                    })
 
-                if (dbUser) {
-                    token.firstName = dbUser.firstName
-                    token.lastName = dbUser.lastName
-                    token.roleId = dbUser.roleId
-                    token.isActive = dbUser.isActive
-                    token.createdAt = dbUser.createdAt.toISOString()
-                    token.updatedAt = dbUser.updatedAt.toISOString()
-                    token.role = dbUser.role.name
+                    if (dbUser) {
+                        token.id = dbUser.id
+                        token.firstName = dbUser.firstName
+                        token.lastName = dbUser.lastName
+                        token.roleId = dbUser.roleId
+                        token.isActive = dbUser.isActive
+                        token.createdAt = dbUser.createdAt.toISOString()
+                        token.updatedAt = dbUser.updatedAt.toISOString()
+                        token.role = dbUser.role.name
+                    }
                 }
             }
 
@@ -225,6 +230,7 @@ export const authOptions: NextAuthOptions = {
 
         async session({ session, token }) {
             if (session?.user) {
+                session.user.id = Number(token.id)
                 session.user.firstName = token.firstName
                 session.user.lastName = token.lastName
                 session.user.roleId = token.roleId

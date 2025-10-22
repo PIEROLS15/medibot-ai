@@ -20,7 +20,7 @@ export function useUser() {
                     variant: 'destructive',
                     title: 'Error',
                     description: 'No se pudieron obtener los usuarios',
-                    duration: 3000,
+                    duration: 2000,
                 })
             }
         } catch (error) {
@@ -29,7 +29,7 @@ export function useUser() {
                 variant: 'destructive',
                 title: 'Error',
                 description: 'Hubo un problema al cargar los usuarios',
-                duration: 3000,
+                duration: 2000,
             })
         } finally {
             setLoading(false)
@@ -53,7 +53,7 @@ export function useUser() {
                     variant: 'destructive',
                     title: 'Error',
                     description: data.message || 'No se pudo registrar el usuario',
-                    duration: 3000,
+                    duration: 2000,
                 })
                 return false
             }
@@ -62,7 +62,7 @@ export function useUser() {
                 variant: 'success',
                 title: 'Éxito',
                 description: `El usuario ${userData.firstName} ${userData.lastName} se ha creado correctamente`,
-                duration: 3000,
+                duration: 2000,
             })
             return true
 
@@ -72,7 +72,7 @@ export function useUser() {
                 variant: 'destructive',
                 title: 'Error',
                 description: 'Hubo un problema al registrar el usuario',
-                duration: 3000,
+                duration: 2000,
             })
         } finally {
             setLoading(false)
@@ -96,14 +96,14 @@ export function useUser() {
                     variant: 'success',
                     title: 'Éxito',
                     description: `El usuario ${userData.firstName} ${userData.lastName} se ha ${newStatus ? 'activado' : 'desactivado'} correctamente`,
-                    duration: 3000,
+                    duration: 2000,
                 })
             } else {
                 toast({
                     variant: 'destructive',
                     title: 'Error',
                     description: data.message || 'No se pudo actualizar el estado del usuario',
-                    duration: 3000,
+                    duration: 2000,
                 })
             }
         } catch (error) {
@@ -112,7 +112,7 @@ export function useUser() {
                 variant: 'destructive',
                 title: 'Error',
                 description: 'Hubo un problema al actualizar el estado del usuario',
-                duration: 3000,
+                duration: 2000,
             })
         } finally {
             setLoading(false)
@@ -136,14 +136,14 @@ export function useUser() {
                     variant: 'success',
                     title: 'Éxito',
                     description: `El usuario ${userData.firstName} ${userData.lastName} se ha actualizado correctamente`,
-                    duration: 3000,
+                    duration: 2000,
                 })
             } else {
                 toast({
                     variant: 'destructive',
                     title: 'Error',
                     description: data.message || 'No se pudo actualizar el estado del usuario',
-                    duration: 3000,
+                    duration: 2000,
                 })
             }
         } catch (error) {
@@ -152,7 +152,7 @@ export function useUser() {
                 variant: 'destructive',
                 title: 'Error',
                 description: 'Hubo un problema al actualizar el usuario',
-                duration: 3000,
+                duration: 2000,
             })
         } finally {
             setLoading(false)

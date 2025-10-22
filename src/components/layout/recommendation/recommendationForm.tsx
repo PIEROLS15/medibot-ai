@@ -143,6 +143,7 @@ const RecommendationForm = () => {
                                 name='fullName'
                                 value={form.fullName}
                                 onChange={handleChange}
+                                readOnly
                                 className='dark:bg-gray-800 dark:border-gray-700'
                             />
                             {errors.fullName && <p className='text-sm text-red-500'>{errors.fullName}</p>}

@@ -1,15 +1,19 @@
-import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import { z } from 'zod'
 import { useToast } from '@/hooks/use-toast'
 import { useIdentification } from '@/hooks/useIdentification'
 import { createFormSchema } from '@/utils/recommendation'
 import { FormRecommendation, MedicalInput } from '@/types/recommendation'
 import { useGeminiRecommendation } from '@/hooks/useGeminiRecommendation'
+import { useSaveRecommendation } from '@/hooks/useSaveRecommendation'
+import { useSession } from 'next-auth/react'
 
 export const useRecommendation = () => {
     const { toast } = useToast()
     const { identification, fetchIdentification, searchPersonDni, searchPersonRuc } = useIdentification()
     const { isLoading: isGeminiLoading, recommendations, generateRecommendation, setRecommendations } = useGeminiRecommendation()
+    const { createRecommendation } = useSaveRecommendation()
+    const { data: session, status } = useSession()
 
     const [form, setForm] = useState<FormRecommendation>({
         idType: '',
@@ -30,7 +34,6 @@ export const useRecommendation = () => {
     const [isSearching, setIsSearching] = useState(false)
     const [errors, setErrors] = useState<Record<string, string>>({})
     const [lastSearchedId, setLastSearchedId] = useState('')
-    const debounceRef = useRef<NodeJS.Timeout | null>(null)
 
     //Cargar tipos de identificación
     useEffect(() => {
@@ -54,7 +57,7 @@ export const useRecommendation = () => {
         return isValidIdNumber && form.idNumber !== lastSearchedId
     }, [isValidIdNumber, form.idNumber, lastSearchedId])
 
-    // ✅ Buscar datos del usuario por identificación
+    //Buscar datos del usuario por identificación
     const performSearch = useCallback(async () => {
         if (!isValidIdNumber) return
         setIsSearching(true)
@@ -94,28 +97,7 @@ export const useRecommendation = () => {
         } finally {
             setIsSearching(false)
         }
-    }, [
-        form.idType,
-        form.idNumber,
-        identification,
-        isValidIdNumber,
-        searchPersonDni,
-        searchPersonRuc,
-        toast,
-    ])
-
-    //Búsqueda automática con debounce
-    useEffect(() => {
-        if (debounceRef.current) clearTimeout(debounceRef.current)
-
-        if (isValidIdNumber && form.idNumber !== lastSearchedId) {
-            debounceRef.current = setTimeout(() => performSearch(), 1500)
-        }
-
-        return () => {
-            if (debounceRef.current) clearTimeout(debounceRef.current)
-        }
-    }, [form.idNumber, isValidIdNumber, lastSearchedId, performSearch])
+    }, [form.idType, form.idNumber, identification, isValidIdNumber, searchPersonDni, searchPersonRuc, toast])
 
     //Validar formulario con Zod
     const validateForm = (): boolean => {
@@ -146,6 +128,27 @@ export const useRecommendation = () => {
             return
         }
 
+        if (status === 'loading') {
+            toast({
+                variant: 'default',
+                title: 'Cargando sesión...',
+                description: 'Por favor, espera un momento.',
+                duration: 1500,
+            })
+            return
+        }
+
+        if (!session?.user?.id) {
+            toast({
+                variant: 'destructive',
+                title: 'Usuario no autenticado',
+                description: 'Por favor, inicia sesión antes de generar una recomendación.',
+                duration: 2000,
+            })
+            return
+        }
+
+        //Datos del formulario en bruto
         const processed: MedicalInput = {
             age: Number(form.age),
             sex: form.gender,
@@ -159,7 +162,32 @@ export const useRecommendation = () => {
             severity: form.severity || null,
         }
 
-        await generateRecommendation(processed, form.fullName)
+        const geminiResult = await generateRecommendation(processed, form.fullName)
+
+        if (geminiResult && (geminiResult.recommendations?.length > 0 || geminiResult.reason)) {
+            const userId = session.user.id
+
+            //Datos a almacenar en la BD
+            try {
+                await createRecommendation({
+                    userId,
+                    form,
+                    recommendationResult: {
+                        ...geminiResult,
+                        reason: geminiResult?.reason ?? null,
+                    },
+                })
+
+            } catch (error) {
+                console.error('Error al guardar recomendación:', error)
+                toast({
+                    variant: 'destructive',
+                    title: 'Error al guardar recomendación',
+                    description: 'Hubo un problema al guardar la información',
+                    duration: 2000,
+                })
+            }
+        }
     }
 
     //Reiniciar formulario

@@ -8,20 +8,40 @@ export async function generatePDF(
     reason: string | null
 ): Promise<void> {
     const doc = new jsPDF()
+    const NEXTAUTH_URL = process.env.NEXT_PUBLIC_NEXTAUTH_URL ?? "No funciono"
+
+    // === Cargar marca de agua ===
+    const watermark = await loadLogoAsBase64("/logo_medibotai.png")
+
+    // Tamaño de la marca de agua (ajusta según prefieras)
+    const watermarkWidth = 200
+    const watermarkHeight = watermark.height * (watermarkWidth / watermark.width)
+
+    // Agregar marca de agua en la primera página
+    await addWatermark(doc, watermark.dataUrl, watermarkWidth, watermarkHeight)
 
     // === Logo y encabezado ===
-    const { dataUrl, width, height } = await loadLogoAsBase64("/logo.jpg")
-    doc.addImage(dataUrl, "JPEG", 20, 10, width, height)
+    const { dataUrl, width, height } = await loadLogoAsBase64("/logo_name_black.png")
+    const xPos = 20
+    const yPosLogo = 5
+    doc.addImage(dataUrl, "PNG", xPos, yPosLogo, width, height)
 
+    const titleYPos = yPosLogo + (height / 2) + 2
     doc.setFont("helvetica", "bold").setFontSize(14)
-    doc.text("Recomendación de medicamentos", 140, 20, { align: "center" })
+    const title = "Recomendación de medicamentos"
+    const rightMargin = 190
+    const textWidth = doc.getTextWidth(title)
 
-    const fecha = new Date().toLocaleDateString()
+    const titleX = rightMargin - textWidth
+    doc.text(title, titleX, titleYPos)
+
+    // Fecha
+    const fecha = new Date().toLocaleDateString("es-PE", { timeZone: "America/Lima" })
     doc.setFont("helvetica", "normal").setFontSize(10)
-    doc.text(`Generado el ${fecha}`, 190, 28, { align: "right" })
+    doc.text(`Generado el ${fecha}`, rightMargin, titleYPos + 8, { align: "right" })
 
-    // empezar debajo del logo
-    let yPos = 10 + height + 20
+    // empezar debajo del logo con menos espacio
+    let yPos = yPosLogo + height + 10
 
     // === Información del Paciente ===
     doc.setFont("helvetica", "bold").setFontSize(13)
@@ -62,6 +82,8 @@ export async function generatePDF(
             if (yPos > 260) {
                 doc.addPage()
                 yPos = 20
+                // Agregar marca de agua en la nueva página
+                addWatermark(doc, watermark.dataUrl, watermarkWidth, watermarkHeight)
             }
 
             doc.setFont("helvetica", "bold").setFontSize(11)
@@ -105,6 +127,8 @@ export async function generatePDF(
         doc.text("No hay recomendaciones disponibles.", 30, yPos)
     }
 
+    printFooterURL(doc, NEXTAUTH_URL)
+
     const fileName = `Recomendacion_${userData.fullName.replace(/\s+/g, "_")}.pdf`
     doc.save(fileName)
 }
@@ -145,9 +169,11 @@ function printListField(doc: jsPDF, label: string, value: string, y: number): nu
 }
 
 /**
- * Carga el logo de /public/logo.jpg y lo escala proporcionalmente
+ * Carga el logo y lo ajusta proporcionalmente dentro de un contenedor fijo.
  */
-async function loadLogoAsBase64(url: string): Promise<{ dataUrl: string; width: number; height: number }> {
+async function loadLogoAsBase64(
+    url: string
+): Promise<{ dataUrl: string; width: number; height: number }> {
     const response = await fetch(url)
     const blob = await response.blob()
 
@@ -157,19 +183,15 @@ async function loadLogoAsBase64(url: string): Promise<{ dataUrl: string; width: 
             const img = new Image()
             img.src = reader.result as string
             img.onload = () => {
-                const maxWidth = 40  // ancho máximo
-                const maxHeight = 20 // alto máximo
-                let { width, height } = img
+                // 🔧 Tamaño del contenedor (ajusta según prefieras)
+                const containerWidth = 120
+                const containerHeight = 50
 
-                // escalar proporcionalmente
-                if (width > maxWidth) {
-                    height = (maxWidth / width) * height
-                    width = maxWidth
-                }
-                if (height > maxHeight) {
-                    width = (maxHeight / height) * width
-                    height = maxHeight
-                }
+                let { width, height } = img
+                const ratio = Math.min(containerWidth / width, containerHeight / height)
+
+                width = width * ratio
+                height = height * ratio
 
                 resolve({ dataUrl: reader.result as string, width, height })
             }
@@ -178,4 +200,33 @@ async function loadLogoAsBase64(url: string): Promise<{ dataUrl: string; width: 
         reader.onerror = reject
         reader.readAsDataURL(blob)
     })
+}
+
+/**
+ * Agrega marca de agua centrada en la página actual
+ */
+async function addWatermark(doc: jsPDF, watermarkData: string, width: number, height: number): Promise<void> {
+    const pageWidth = doc.internal.pageSize.getWidth()
+    const pageHeight = doc.internal.pageSize.getHeight()
+
+    // Centrar la marca de agua
+    const x = (pageWidth - width) / 2
+    const y = (pageHeight - height) / 2
+
+    // Agregar con opacidad reducida (marca de agua)
+    doc.saveGraphicsState()
+    // @ts-expect-error - `internal.GState` no está declarado en los tipos públicos de jsPDF
+    doc.setGState(new doc.GState({ opacity: 0.2 }))
+    doc.addImage(watermarkData, "PNG", x, y, width, height)
+    doc.restoreGraphicsState()
+}
+
+/**
+ * Función para imprimir el NEXTAUTH_URL al final de cada hoja
+ */
+function printFooterURL(doc: jsPDF, url: string) {
+    const pageHeight = doc.internal.pageSize.getHeight()
+    const rightMargin = 190
+    doc.setFont("helvetica", "italic").setFontSize(9)
+    doc.text(url, rightMargin, pageHeight - 10, { align: "right" })
 }

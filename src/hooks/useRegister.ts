@@ -49,7 +49,7 @@ export const useRegister = () => {
                     variant: 'success',
                     title: 'Cuenta creada',
                     description: 'Por favor, inicia sesión con tus credenciales.',
-                    duration: 3000,
+                    duration: 2000,
                 })
                 router.push('/login')
             }
