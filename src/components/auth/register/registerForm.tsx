@@ -8,11 +8,12 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import ThemeToggle from '@/components/ui/themeToggle'
-import { Loader2, Mail, Lock, Pill, User, Eye, EyeOff } from 'lucide-react'
+import { Loader2, Mail, Lock, User, Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
 import GoogleButton from '@/components/ui/buttonGoogle'
 import { useLoginGoogle } from '@/hooks/useLoginGoogle'
 import { useRegister } from '@/hooks/useRegister'
+import Image from 'next/image'
 
 export default function RegistroForm() {
     const { handleGoogleSignIn, isLoadingGoogle } = useLoginGoogle()
@@ -26,6 +27,7 @@ export default function RegistroForm() {
     })
     const [showPassword, setShowPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+    const logoPath = process.env.NEXT_PUBLIC_LOGO_PATH || '/default_logo.png'
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target
@@ -40,8 +42,15 @@ export default function RegistroForm() {
     return (
         <Card className='shadow-lg border-0 bg-white/80 backdrop-blur-sm dark:bg-gray-900/80 dark:border-gray-800'>
             <CardHeader className='text-center pb-6'>
-                <div className='mx-auto w-12 h-12 bg-primary rounded-full flex items-center justify-center mb-4'>
-                    <Pill className='w-6 h-6 text-white' />
+                <div className='flex items-center justify-center'>
+                    <Image
+                        src={logoPath}
+                        alt='Medibot AI Logo'
+                        width={128}
+                        height={128}
+                        className='rounded-full'
+                        priority
+                    />
                 </div>
                 <CardTitle className='text-2xl font-bold text-gray-900 dark:text-white'>Crear Cuenta</CardTitle>
                 <CardDescription className='text-gray-600 dark:text-gray-400'>
