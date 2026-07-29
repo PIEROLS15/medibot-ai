@@ -1,0 +1,72 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: medibot-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: medibot_ai_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345
+    ports:
+      - "5432:5432"
+    volumes:
+      - medibot_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d medibot_ai_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  init:
+    build:
+      context: .
+      target: builder
+      args:
+        DATABASE_URL: postgresql://postgres:12345@db:5432/medibot_ai_db?schema=public
+        NEXT_PUBLIC_NAME: ${NEXT_PUBLIC_NAME}
+        NEXT_PUBLIC_DESCRIPTION: ${NEXT_PUBLIC_DESCRIPTION}
+        NEXT_PUBLIC_LOGO_PATH: ${NEXT_PUBLIC_LOGO_PATH}
+        NEXT_PUBLIC_NEXTAUTH_URL: ${NEXT_PUBLIC_NEXTAUTH_URL}
+        NEXT_PUBLIC_API_RENIEC_DNI: ${NEXT_PUBLIC_API_RENIEC_DNI}
+        NEXT_PUBLIC_API_RENIEC_RUC: ${NEXT_PUBLIC_API_RENIEC_RUC}
+    container_name: medibot-init
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://postgres:12345@db:5432/medibot_ai_db?schema=public
+      NEXTAUTH_URL: http://localhost:3000
+      NEXT_PUBLIC_NEXTAUTH_URL: http://localhost:3000
+    command: sh -c "npx prisma migrate deploy && npm run seed"
+    restart: "no"
+
+  app:
+    build:
+      context: .
+      target: runner
+      args:
+        DATABASE_URL: postgresql://postgres:12345@db:5432/medibot_ai_db?schema=public
+        NEXT_PUBLIC_NAME: ${NEXT_PUBLIC_NAME}
+        NEXT_PUBLIC_DESCRIPTION: ${NEXT_PUBLIC_DESCRIPTION}
+        NEXT_PUBLIC_LOGO_PATH: ${NEXT_PUBLIC_LOGO_PATH}
+        NEXT_PUBLIC_NEXTAUTH_URL: ${NEXT_PUBLIC_NEXTAUTH_URL}
+        NEXT_PUBLIC_API_RENIEC_DNI: ${NEXT_PUBLIC_API_RENIEC_DNI}
+        NEXT_PUBLIC_API_RENIEC_RUC: ${NEXT_PUBLIC_API_RENIEC_RUC}
+    container_name: medibot-app
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://postgres:12345@db:5432/medibot_ai_db?schema=public
+      NEXTAUTH_URL: http://localhost:3000
+      NEXT_PUBLIC_NEXTAUTH_URL: http://localhost:3000
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+volumes:
+  medibot_db_data:

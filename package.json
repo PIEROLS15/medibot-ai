@@ -1,5 +1,5 @@
 {
-  "name": "recommendation-system",
+  "name": "medibot-ai",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\"",
     "lint:fix": "eslint --fix \"src/**/*.{js,jsx,ts,tsx}\"",
-    "seed": "ts-node src/seed/seed-database.ts",
+    "seed": "ts-node --project src/seed/tsconfig.json src/seed/seed-database.ts",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
     "cypress:users": "cypress run --spec 'cypress/e2e/users/**/*.cy.ts'"
