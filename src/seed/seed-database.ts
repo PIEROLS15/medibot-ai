@@ -2,37 +2,52 @@ import prisma from "../lib/prisma";
 import { initialData } from "./seed";
 
 async function main() {
-    //Elimina registros de la base de datos
-    // await prisma.user.deleteMany()
-    await prisma.role.deleteMany()
-    await prisma.identificationType.deleteMany()
+    try {
+        const [roleCount, identificationTypeCount] = await Promise.all([
+            prisma.role.count(),
+            prisma.identificationType.count(),
+        ])
 
-    // Reiniciar los índices de autoincremento
-    await prisma.$executeRaw`ALTER SEQUENCE "Role_id_seq" RESTART WITH 1`;
-    // await prisma.$executeRaw`ALTER SEQUENCE "User_id_seq" RESTART WITH 1`;
-    await prisma.$executeRaw`ALTER SEQUENCE "IdentificationType_id_seq" RESTART WITH 1`;
+        if (roleCount > 0 || identificationTypeCount > 0) {
+            console.log('Seed omitido: la base de datos ya contiene datos iniciales')
+            return
+        }
 
-    //Extrae los datos de initialData
-    const { roles } = initialData
-    // const { users } = initialData
-    const { identifications } = initialData
+        //Elimina registros de la base de datos
+        // await prisma.user.deleteMany()
+        await prisma.role.deleteMany()
+        await prisma.identificationType.deleteMany()
 
-    //Inserta los datos a la base de datos
-    await prisma.role.createMany({
-        data: roles
-    });
+        // Reiniciar los índices de autoincremento
+        await prisma.$executeRaw`ALTER SEQUENCE "Role_id_seq" RESTART WITH 1`;
+        // await prisma.$executeRaw`ALTER SEQUENCE "User_id_seq" RESTART WITH 1`;
+        await prisma.$executeRaw`ALTER SEQUENCE "IdentificationType_id_seq" RESTART WITH 1`;
 
-    // await prisma.user.createMany({
-    //     data: users
-    // })
+        //Extrae los datos de initialData
+        const { roles } = initialData
+        // const { users } = initialData
+        const { identifications } = initialData
 
-    await prisma.identificationType.createMany({
-        data: identifications
-    })
+        //Inserta los datos a la base de datos
+        await prisma.role.createMany({
+            data: roles
+        });
 
-    console.log('Seed ejecutado correctamente')
+        // await prisma.user.createMany({
+        //     data: users
+        // })
+
+        await prisma.identificationType.createMany({
+            data: identifications
+        })
+
+        console.log('Seed ejecutado correctamente')
+    } finally {
+        await prisma.$disconnect()
+    }
 }
 
-(() => {
-    main()
-})()
+main().catch((error) => {
+    console.error('Error ejecutando seed:', error)
+    process.exit(1)
+})
