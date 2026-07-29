@@ -1,7 +1,7 @@
 "use client"
 
 import { useSidebar } from "@/contexts/sidebarContext"
-import Sidebar from "@/components/layout/sidebar/page"
+import Sidebar from "@/components/layout/sidebar/sidebar"
 import ThemeToggle from "@/components/ui/themeToggle"
 import MobileMenuButton from "@/components/mobile-menu-button"
 import type { ReactNode } from "react"

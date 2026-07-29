@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { z } from 'zod'
 import { loginSchema } from '@/lib/validations/auth'
 import { useToast } from '@/hooks/use-toast'
+import { formatZodErrors } from '@/lib/zod'
 
 interface Errors {
     [key: string]: string | undefined
@@ -40,11 +41,7 @@ export const useLogin = () => {
             }
         } catch (err) {
             if (err instanceof z.ZodError) {
-                const formattedErrors: Errors = {}
-                err.errors.forEach((error) => {
-                    formattedErrors[error.path[0]] = error.message
-                })
-                setErrors(formattedErrors)
+                setErrors(formatZodErrors(err))
             } else {
                 toast({
                     variant: 'destructive',

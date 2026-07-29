@@ -1,5 +1,5 @@
-import prisma from "../lib/prisma";
-import { initialData } from "./seed";
+import prisma from "../lib/prisma"
+import { initialData } from "./seed"
 
 async function main() {
     try {
@@ -31,7 +31,7 @@ async function main() {
         //Inserta los datos a la base de datos
         await prisma.role.createMany({
             data: roles
-        });
+        })
 
         // await prisma.user.createMany({
         //     data: users

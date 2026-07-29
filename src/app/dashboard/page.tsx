@@ -1,6 +1,6 @@
 import Header from "@/components/layout/header"
 
-const Dahboard = () => {
+const DashboardPage = () => {
     return (
         <>
             <div className="space-y-6 pt-10">
@@ -14,4 +14,4 @@ const Dahboard = () => {
     )
 }
 
-export default Dahboard
+export default DashboardPage

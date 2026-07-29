@@ -4,8 +4,8 @@ import { cn } from '@/lib/utils'
 import { ChevronRight } from 'lucide-react'
 import { useSidebar } from '@/contexts/sidebarContext'
 import LogoutButton from './logoutButton'
-import UserProfile from '../components/userProfile'
-import NavigationItems from '../components/navigationItems'
+import UserProfile from './userProfile'
+import NavigationItems from './navigationItems'
 import Image from 'next/image'
 
 const DesktopSidebar = () => {

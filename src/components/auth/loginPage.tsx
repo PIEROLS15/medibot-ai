@@ -1,24 +1,15 @@
 'use client'
 
-import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import ThemeToggle from '@/components/ui/themeToggle'
 import LoginForm from './ui/loginForm'
-import { useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRedirectAuthenticated } from '@/hooks/useRedirectAuthenticated'
 
 const LoginPage = () => {
-    const { status } = useSession()
-    const router = useRouter()
+    useRedirectAuthenticated('/dashboard')
     const logoPath = process.env.NEXT_PUBLIC_LOGO_PATH || '/default_logo.png'
-
-    useEffect(() => {
-        if (status === 'authenticated') {
-            router.push('/dashboard')
-        }
-    }, [status, router])
 
     return (
         <Card className='shadow-lg border-0 bg-white/80 backdrop-blur-sm dark:bg-gray-900/80 dark:border-gray-800'>

@@ -1,26 +1,20 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { X } from 'lucide-react'
 import { useSidebar } from '@/contexts/sidebarContext'
-import { useEffect } from 'react'
 import LogoutButton from './logoutButton'
 import UserProfile from './userProfile'
 import NavigationItems from './navigationItems'
 import Image from 'next/image'
+import { useSidebarAutoClose } from '@/hooks/useSidebarAutoClose'
 
 const MobileSidebar = () => {
-    const pathname = usePathname()
-    const { mobileOpen, setMobileOpen, isMobile } = useSidebar()
+    const { mobileOpen, setMobileOpen } = useSidebar()
     const logoPath = process.env.NEXT_PUBLIC_LOGO_PATH || '/default_logo.png'
     const nameSystem = process.env.NEXT_PUBLIC_NAME || 'Nombre del sistema'
 
-    useEffect(() => {
-        if (isMobile) {
-            setMobileOpen(false)
-        }
-    }, [pathname, isMobile, setMobileOpen])
+    useSidebarAutoClose()
 
     return (
         <>

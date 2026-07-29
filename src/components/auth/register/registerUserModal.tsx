@@ -1,7 +1,4 @@
 'use client'
-
-import type React from 'react'
-import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -14,7 +11,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog'
 import { Loader2, Eye, EyeOff, CheckCircle } from 'lucide-react'
-import { useRegister } from '@/hooks/useRegister'
+import { useRegisterUserModal } from '@/hooks/useRegisterUserModal'
 
 interface RegisterUserModalProps {
     open: boolean
@@ -22,41 +19,20 @@ interface RegisterUserModalProps {
 }
 
 const RegisterUserModal = ({ open, onOpenChange }: RegisterUserModalProps) => {
-    const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-    })
-    const [showPassword, setShowPassword] = useState(false)
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-    const { isSuccess, isLoading, errors, handleRegisterModal } = useRegister()
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target
-        setFormData((prev) => ({ ...prev, [name]: value }))
-    }
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault()
-        handleRegisterModal(formData)
-    }
-
-    const handleClose = () => {
-        if (!isLoading) {
-            setFormData({
-                firstName: '',
-                lastName: '',
-                email: '',
-                password: '',
-                confirmPassword: '',
-            })
-            setShowPassword(false)
-            setShowConfirmPassword(false)
-            onOpenChange(false)
-        }
-    }
+    const {
+        formData,
+        showPassword,
+        setShowPassword,
+        showConfirmPassword,
+        setShowConfirmPassword,
+        isSuccess,
+        isLoading,
+        errors,
+        handleChange,
+        handleSubmit,
+        handleClose,
+        handleSuccessAcknowledge,
+    } = useRegisterUserModal(onOpenChange)
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -81,10 +57,7 @@ const RegisterUserModal = ({ open, onOpenChange }: RegisterUserModalProps) => {
                             Farmacéutico.
                         </p>
                         <Button
-                            onClick={() => {
-                                handleClose()
-                                window.location.reload()
-                            }}
+                            onClick={handleSuccessAcknowledge}
                             className='bg-primary hover:bg-secondary text-white'
                         >
                             Entendido

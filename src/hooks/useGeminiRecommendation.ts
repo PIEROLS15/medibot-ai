@@ -1,33 +1,28 @@
 import { useState } from 'react'
 import { useToast } from '@/hooks/use-toast'
-import { Recommendation, MedicalInput, MedicalResponse } from '@/types/recommendation'
+import { MedicalInput, MedicalResponse } from '@/types/recommendation.backend'
 
 interface UseGeminiRecommendationResult {
     isLoading: boolean
-    recommendations: { recommendations: Recommendation[]; reason?: string | null } | null
-    setRecommendations: React.Dispatch<
-        React.SetStateAction<{ recommendations: Recommendation[]; reason?: string | null } | null>
-    >
+    recommendations: MedicalResponse | null
+    setRecommendations: React.Dispatch<React.SetStateAction<MedicalResponse | null>>
     error: string | null
     generateRecommendation: (
         data: MedicalInput,
         userName?: string
-    ) => Promise<{ recommendations: Recommendation[]; reason?: string | null } | null>
+    ) => Promise<MedicalResponse | null>
 }
 
 export const useGeminiRecommendation = (): UseGeminiRecommendationResult => {
     const [isLoading, setIsLoading] = useState(false)
-    const [recommendations, setRecommendations] = useState<{
-        recommendations: Recommendation[]
-        reason?: string | null
-    } | null>(null)
+    const [recommendations, setRecommendations] = useState<MedicalResponse | null>(null)
     const [error, setError] = useState<string | null>(null)
     const { toast } = useToast()
 
     const generateRecommendation = async (
         data: MedicalInput,
         userName?: string
-    ): Promise<{ recommendations: Recommendation[]; reason?: string | null } | null> => {
+    ): Promise<MedicalResponse | null> => {
         setIsLoading(true)
         setError(null)
 
@@ -62,7 +57,7 @@ export const useGeminiRecommendation = (): UseGeminiRecommendationResult => {
             return {
                 recommendations: result.recommendations || [],
                 reason: result.reason || null,
-            } as MedicalResponse
+            }
         } catch (err) {
             console.error('Error en generateRecommendation:', err)
             const message =

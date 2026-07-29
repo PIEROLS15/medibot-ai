@@ -1,7 +1,9 @@
 import { NextResponse, NextRequest } from 'next/server'
 import { buildMedicalPrompt } from '@/lib/prompt'
-import { validateMedicalInput, validateMedicalResponse, safeJson, medicalResponseSchema } from '@/utils/recommendation'
-import { MedicalResponse } from '@/types/recommendation'
+import { validateMedicalInput, validateMedicalResponse } from '@/lib/recommendation/validation'
+import { medicalResponseSchema } from '@/lib/validations/recommendation'
+import { MedicalResponse } from '@/types/recommendation.backend'
+import { safeJson } from '@/lib/http'
 
 const GEMINI_URL = process.env.GEMINI_URL
 

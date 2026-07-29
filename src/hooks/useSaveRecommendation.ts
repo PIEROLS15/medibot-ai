@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { RecommendationPayload } from '@/types/recommendation'
+import { RecommendationPayload } from '@/types/recommendation.backend'
 
 export function useSaveRecommendation() {
     const [isSaving, setIsSaving] = useState(false)

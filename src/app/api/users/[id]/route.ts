@@ -1,40 +1,30 @@
 import { NextResponse, NextRequest } from 'next/server'
-import prisma from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import bcrypt from 'bcryptjs'
+import { deleteUserById, getUserById, updateUserById } from '@/services/users/user.service'
 
-export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+export async function GET(_request: NextRequest, context: { params: Promise<{ id: string }> }) {
 
     const { id } = await context.params
 
     try {
-        const userWithPassword = await prisma.user.findUnique({
-            where: { id: parseInt(id, 10) },
-            include: {
-                role: true
-            }
-        })
+        const user = await getUserById(parseInt(id, 10))
 
-        if (!userWithPassword) {
+        if (!user) {
             return NextResponse.json(
                 { error: 'Usuario no encontrado' },
                 { status: 404 }
             )
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { password, ...user } = userWithPassword
-
         return NextResponse.json(user, { status: 200 })
 
     } catch (error) {
+        const message = error instanceof Error ? error.message : 'Error interno del servidor'
         return NextResponse.json(
-            { error: 'Error al obtener los usuarios', details: (error as Error).message },
+            { error: 'Error al obtener el usuario', details: message },
             { status: 500 }
         )
-    } finally {
-        await prisma.$disconnect()
     }
 }
 
@@ -61,106 +51,63 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
     }
 
     try {
-
-        const existingUser = await prisma.user.findUnique({
-            where: { id: parseInt(id, 10) }
+        const updatedUser = await updateUserById(parseInt(id, 10), {
+            firstName,
+            lastName,
+            email,
+            password,
+            roleId: roleId ? parseInt(roleId, 10) : undefined,
+            isActive,
         })
 
-        if (!existingUser) {
+        if (!updatedUser) {
             return NextResponse.json(
                 { error: 'Usuario no encontrado.' },
                 { status: 404 }
             )
         }
 
-        if (email && email !== existingUser.email) {
-            const emailExists = await prisma.user.findUnique({
-                where: { email }
-            })
-
-            if (emailExists) {
-                return NextResponse.json(
-                    { error: 'El email ya está en uso por otro usuario.' },
-                    { status: 400 }
-                )
-            }
-        }
-
-        const updateData: {
-            firstName?: string
-            lastName?: string
-            email?: string
-            password?: string
-            roleId?: number
-            isActive?: boolean
-        } = {}
-
-        if (firstName) updateData.firstName = firstName
-        if (lastName) updateData.lastName = lastName
-        if (email) updateData.email = email
-        if (roleId) updateData.roleId = parseInt(roleId, 10)
-        if (isActive !== undefined) updateData.isActive = isActive
-
-        if (password) {
-            const saltRounds = 12
-            updateData.password = await bcrypt.hash(password, saltRounds)
-        }
-
-        const updatedUser = await prisma.user.update({
-            where: { id: parseInt(id, 10) },
-            data: updateData,
-            select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                email: true,
-                roleId: true,
-                role: true,
-                isActive: true,
-                createdAt: true,
-                updatedAt: true
-            }
-        })
-
         return NextResponse.json(
             { message: 'Usuario actualizado correctamente', user: updatedUser },
             { status: 200 }
         )
     } catch (error) {
+        const message = error instanceof Error ? error.message : 'Error interno del servidor'
+        const status = message.includes('email ya está en uso') ? 400 : 500
         return NextResponse.json(
-            { error: 'Error al actualizar el rol del usuario', details: error },
-            { status: 500 }
+            { error: 'Error al actualizar el usuario', details: message },
+            { status }
         )
-    } finally {
-        await prisma.$disconnect()
     }
 }
 
-export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+export async function DELETE(_request: NextRequest, context: { params: Promise<{ id: string }> }) {
+
+    const session = await getServerSession(authOptions)
+
+    if (!session || session.user.roleId !== 1) {
+        return NextResponse.json(
+            { error: 'No autorizado. Solo los administradores pueden eliminar usuarios.' },
+            { status: 403 }
+        )
+    }
 
     const { id } = await context.params
 
     try {
         const userId = Number(id)
 
-        await prisma.user.delete({
-            where: { id: userId },
-        })
+        await deleteUserById(userId)
 
         return NextResponse.json(
             { message: 'Usuario eliminado correctamente' },
             { status: 200 }
         )
     } catch (error) {
+        const message = error instanceof Error ? error.message : 'Error interno del servidor'
         return NextResponse.json(
-            { error: 'Error al eliminar al usuario', details: error },
+            { error: 'Error al eliminar al usuario', details: message },
             { status: 500 }
         )
-    } finally {
-        await prisma.$disconnect()
     }
-}
-
-export async function POST() {
-    return NextResponse.json({ error: 'Método no permitido' }, { status: 405 })
 }

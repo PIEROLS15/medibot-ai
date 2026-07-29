@@ -1,5 +1,11 @@
 import { useState, useCallback } from 'react'
 import { Identification } from '@/types/user'
+import { requestJson } from '@/lib/http'
+
+type IdentificationLookupResult = {
+    full_name?: string
+    razon_social?: string
+}
 
 export function useIdentification() {
     const [identification, setIdentification] = useState<Identification[]>([])
@@ -8,14 +14,8 @@ export function useIdentification() {
     const fetchIdentification = useCallback(async () => {
         setLoading(true)
         try {
-            const res = await fetch(`/api/identification`)
-            if (!res.ok) throw new Error('Error al obtener los tipos de identifaciones')
-            const data = await res.json()
-            if (res.ok) {
-                setIdentification(data)
-            } else {
-                console.log('No se pudieron obtener los tipos de identificaciones')
-            }
+            const data = await requestJson<Identification[]>('/api/identification')
+            setIdentification(data)
         } catch (error) {
             console.error('Error al obtener los tipos de identificaciones', error)
         } finally {
@@ -26,10 +26,7 @@ export function useIdentification() {
     const searchPersonDni = useCallback(async (dni: number) => {
         setLoading(true)
         try {
-            const res = await fetch(`/api/reniec/dni?numero=${dni}`, { method: "GET" })
-            if (!res.ok) throw new Error("Error al obtener los datos del usuario")
-            const data = await res.json()
-            return data
+            return await requestJson<IdentificationLookupResult>(`/api/reniec/dni?numero=${dni}`, { method: 'GET' })
         } catch (error) {
             console.error("Error al obtener los datos del usuario", error)
             return undefined
@@ -41,10 +38,7 @@ export function useIdentification() {
     const searchPersonRuc = useCallback(async (ruc: number) => {
         setLoading(true)
         try {
-            const res = await fetch(`/api/reniec/ruc?numero=${ruc}`, { method: "GET" })
-            if (!res.ok) throw new Error("Error al obtener los datos del usuario")
-            const data = await res.json()
-            return data
+            return await requestJson<IdentificationLookupResult>(`/api/reniec/ruc?numero=${ruc}`, { method: 'GET' })
         } catch (error) {
             console.error("Error al obtener los datos del usuario", error)
             return undefined

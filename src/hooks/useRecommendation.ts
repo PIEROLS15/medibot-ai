@@ -2,11 +2,49 @@ import { useState, useCallback, useEffect, useMemo } from 'react'
 import { z } from 'zod'
 import { useToast } from '@/hooks/use-toast'
 import { useIdentification } from '@/hooks/useIdentification'
-import { createFormSchema } from '@/utils/recommendation'
-import { FormRecommendation, MedicalInput } from '@/types/recommendation'
+import { createFormSchema } from '@/lib/validations/recommendation/createForm.schema'
+import { FormRecommendation } from '@/types/recommendation.forms'
+import { MedicalInput } from '@/types/recommendation.backend'
 import { useGeminiRecommendation } from '@/hooks/useGeminiRecommendation'
 import { useSaveRecommendation } from '@/hooks/useSaveRecommendation'
 import { useSession } from 'next-auth/react'
+import { formatZodErrors } from '@/lib/zod'
+
+const initialForm: FormRecommendation = {
+    idType: '',
+    idNumber: '',
+    fullName: '',
+    age: '',
+    gender: 'masculino',
+    weight: '',
+    symptoms: '',
+    allergies: '',
+    diseases: '',
+    pregnancy: 'no',
+    currentMedication: '',
+    symptomDuration: '',
+    severity: 'leve',
+}
+
+const createInitialForm = (): FormRecommendation => ({ ...initialForm })
+
+const splitCsv = (value: string) => value.split(',').map((item) => item.trim()).filter(Boolean)
+
+const getIdType = (idType: string, identification: Array<{ id: number; type: string }>) =>
+    identification.find((item) => String(item.id) === idType)?.type?.toUpperCase()
+
+const buildMedicalInput = (form: FormRecommendation): MedicalInput => ({
+    age: Number(form.age),
+    sex: form.gender,
+    weight: Number(form.weight),
+    symptoms: splitCsv(form.symptoms),
+    allergies: splitCsv(form.allergies),
+    preexisting_diseases: splitCsv(form.diseases),
+    pregnancy: form.gender === 'femenino' ? form.pregnancy === 'si' : null,
+    current_medication: form.currentMedication || null,
+    duration_days: Number(form.symptomDuration),
+    severity: form.severity || null,
+})
 
 export const useRecommendation = () => {
     const { toast } = useToast()
@@ -15,21 +53,7 @@ export const useRecommendation = () => {
     const { createRecommendation } = useSaveRecommendation()
     const { data: session, status } = useSession()
 
-    const [form, setForm] = useState<FormRecommendation>({
-        idType: '',
-        idNumber: '',
-        fullName: '',
-        age: '',
-        gender: 'masculino',
-        weight: '',
-        symptoms: '',
-        allergies: '',
-        diseases: '',
-        pregnancy: 'no',
-        currentMedication: '',
-        symptomDuration: '',
-        severity: 'leve',
-    })
+    const [form, setForm] = useState<FormRecommendation>(createInitialForm())
 
     const [isSearching, setIsSearching] = useState(false)
     const [errors, setErrors] = useState<Record<string, string>>({})
@@ -43,8 +67,7 @@ export const useRecommendation = () => {
     //Validar número de identificación
     const isValidIdNumber = useMemo(() => {
         if (!form.idType || !form.idNumber) return false
-        const selected = identification.find(i => String(i.id) === form.idType)
-        const type = selected?.type?.toUpperCase()
+        const type = getIdType(form.idType, identification)
         const num = form.idNumber.trim()
         return type === 'DNI'
             ? /^\d{8}$/.test(num)
@@ -57,13 +80,20 @@ export const useRecommendation = () => {
         return isValidIdNumber && form.idNumber !== lastSearchedId
     }, [isValidIdNumber, form.idNumber, lastSearchedId])
 
+    const idNumberPlaceholder = useMemo(() => {
+        const type = getIdType(form.idType, identification)
+
+        if (type === 'DNI') return '8 dígitos'
+        if (type === 'RUC') return '11 dígitos'
+        return ''
+    }, [form.idType, identification])
+
     //Buscar datos del usuario por identificación
     const performSearch = useCallback(async () => {
         if (!isValidIdNumber) return
         setIsSearching(true)
         try {
-            const selected = identification.find(i => String(i.id) === form.idType)
-            const type = selected?.type?.toUpperCase()
+            const type = getIdType(form.idType, identification)
             const num = Number(form.idNumber)
             let result
 
@@ -108,9 +138,7 @@ export const useRecommendation = () => {
             return true
         } catch (error) {
             if (error instanceof z.ZodError) {
-                const formatted: Record<string, string> = {}
-                error.errors.forEach(e => (formatted[e.path[0] as string] = e.message))
-                setErrors(formatted)
+                setErrors(formatZodErrors(error))
             }
             return false
         }
@@ -149,20 +177,7 @@ export const useRecommendation = () => {
         }
 
         //Datos del formulario en bruto
-        const processed: MedicalInput = {
-            age: Number(form.age),
-            sex: form.gender,
-            weight: Number(form.weight),
-            symptoms: form.symptoms.split(',').map(s => s.trim()).filter(Boolean),
-            allergies: form.allergies.split(',').map(s => s.trim()).filter(Boolean),
-            preexisting_diseases: form.diseases.split(',').map(s => s.trim()).filter(Boolean),
-            pregnancy: form.gender === 'femenino' ? form.pregnancy === 'si' : null,
-            current_medication: form.currentMedication || null,
-            duration_days: Number(form.symptomDuration),
-            severity: form.severity || null,
-        }
-
-        const geminiResult = await generateRecommendation(processed, form.fullName)
+        const geminiResult = await generateRecommendation(buildMedicalInput(form), form.fullName)
 
         if (geminiResult && (geminiResult.recommendations?.length > 0 || geminiResult.reason)) {
             const userId = session.user.id
@@ -192,21 +207,7 @@ export const useRecommendation = () => {
 
     //Reiniciar formulario
     const resetForm = () => {
-        setForm({
-            idType: '',
-            idNumber: '',
-            fullName: '',
-            age: '',
-            gender: 'masculino',
-            weight: '',
-            symptoms: '',
-            allergies: '',
-            diseases: '',
-            pregnancy: 'no',
-            currentMedication: '',
-            symptomDuration: '',
-            severity: 'leve',
-        })
+        setForm(createInitialForm())
         setErrors({})
         setLastSearchedId('')
         setRecommendations(null)
@@ -224,5 +225,6 @@ export const useRecommendation = () => {
         performSearch,
         resetForm,
         canSearch,
+        idNumberPlaceholder,
     }
 }

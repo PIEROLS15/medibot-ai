@@ -1,14 +1,11 @@
 "use client"
-
-import type React from "react"
-
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, Mail, CheckCircle } from "lucide-react"
+import { useForgotPasswordModal } from '@/hooks/useForgotPasswordModal'
 
 interface ForgotPasswordModalProps {
     open: boolean
@@ -16,43 +13,7 @@ interface ForgotPasswordModalProps {
 }
 
 const ForgotPasswordModal = ({ open, onOpenChange }: ForgotPasswordModalProps) => {
-    const [email, setEmail] = useState("")
-    const [isLoading, setIsLoading] = useState(false)
-    const [isSuccess, setIsSuccess] = useState(false)
-    const [error, setError] = useState("")
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setIsLoading(true)
-        setError("")
-
-        try {
-            // Simulación de envío de email
-            await new Promise((resolve) => setTimeout(resolve, 2000))
-
-            // Validar formato de email
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-            if (!emailRegex.test(email)) {
-                setError("Por favor ingrese un correo electrónico válido.")
-                return
-            }
-
-            setIsSuccess(true)
-        } catch (err) {
-            void err
-            setError("Error al enviar el correo. Intente nuevamente.")
-        } finally {
-            setIsLoading(false)
-        }
-    }
-
-    const handleClose = () => {
-        setEmail("")
-        setIsSuccess(false)
-        setError("")
-        setIsLoading(false)
-        onOpenChange(false)
-    }
+    const { email, setEmail, isLoading, isSuccess, error, handleSubmit, handleClose } = useForgotPasswordModal(onOpenChange)
 
     return (
         <Dialog open={open} onOpenChange={handleClose}>
@@ -129,4 +90,4 @@ const ForgotPasswordModal = ({ open, onOpenChange }: ForgotPasswordModalProps) =
     )
 }
 
-export default ForgotPasswordModal;
+export default ForgotPasswordModal
