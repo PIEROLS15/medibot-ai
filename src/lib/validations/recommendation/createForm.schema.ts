@@ -1,10 +1,5 @@
 import { z } from 'zod'
-
-//Validación formulario
-interface Identification {
-    id: string | number
-    type?: string
-}
+import type { Identification } from '@/types/user'
 
 export const createFormSchema = (idType: string, identification: Identification[]) => {
     const selected = identification.find(i => String(i.id) === idType)

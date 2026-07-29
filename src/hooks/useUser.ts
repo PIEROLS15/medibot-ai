@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { User, RegisterUser } from '@/types/user'
 import { useToast } from '@/hooks/use-toast'
+import { requestJson } from '@/lib/http'
 
 export function useUser() {
     const [user, setUser] = useState<User[]>([])
@@ -10,19 +11,8 @@ export function useUser() {
     const fetchUser = useCallback(async () => {
         setLoading(true)
         try {
-            const res = await fetch(`/api/users/`)
-            if (!res.ok) throw new Error('Error al obtener el usuario')
-            const data = await res.json()
-            if (res.ok) {
-                setUser(data)
-            } else {
-                toast({
-                    variant: 'destructive',
-                    title: 'Error',
-                    description: 'No se pudieron obtener los usuarios',
-                    duration: 2000,
-                })
-            }
+            const data = await requestJson<User[]>('/api/users/')
+            setUser(data)
         } catch (error) {
             console.error('Error fetching user:', error)
             toast({
@@ -39,24 +29,13 @@ export function useUser() {
     const registerUser = useCallback(async (userData: RegisterUser) => {
         setLoading(true)
         try {
-            const res = await fetch('/api/auth/register', {
+            await requestJson('/api/auth/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(userData),
             })
-            const data = await res.json()
-
-            if (!res.ok) {
-                toast({
-                    variant: 'destructive',
-                    title: 'Error',
-                    description: data.message || 'No se pudo registrar el usuario',
-                    duration: 2000,
-                })
-                return false
-            }
 
             toast({
                 variant: 'success',
@@ -71,9 +50,10 @@ export function useUser() {
             toast({
                 variant: 'destructive',
                 title: 'Error',
-                description: 'Hubo un problema al registrar el usuario',
+                description: error instanceof Error ? error.message : 'Hubo un problema al registrar el usuario',
                 duration: 2000,
             })
+            return false
         } finally {
             setLoading(false)
         }
@@ -82,7 +62,7 @@ export function useUser() {
     const updateStatusUser = useCallback(async (userId: number, userData: Partial<User>, newStatus: boolean) => {
         setLoading(true)
         try {
-            const res = await fetch(`/api/users/${userId}`, {
+            await requestJson(`/api/users/${userId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
@@ -90,28 +70,18 @@ export function useUser() {
                 body: JSON.stringify({ isActive: newStatus })
             })
 
-            const data = await res.json()
-            if (res.ok) {
-                toast({
-                    variant: 'success',
-                    title: 'Éxito',
-                    description: `El usuario ${userData.firstName} ${userData.lastName} se ha ${newStatus ? 'activado' : 'desactivado'} correctamente`,
-                    duration: 2000,
-                })
-            } else {
-                toast({
-                    variant: 'destructive',
-                    title: 'Error',
-                    description: data.message || 'No se pudo actualizar el estado del usuario',
-                    duration: 2000,
-                })
-            }
+            toast({
+                variant: 'success',
+                title: 'Éxito',
+                description: `El usuario ${userData.firstName} ${userData.lastName} se ha ${newStatus ? 'activado' : 'desactivado'} correctamente`,
+                duration: 2000,
+            })
         } catch (error) {
             console.error('Error deactivating user:', error)
             toast({
                 variant: 'destructive',
                 title: 'Error',
-                description: 'Hubo un problema al actualizar el estado del usuario',
+                description: error instanceof Error ? error.message : 'Hubo un problema al actualizar el estado del usuario',
                 duration: 2000,
             })
         } finally {
@@ -122,7 +92,7 @@ export function useUser() {
     const updateUser = useCallback(async (userId: number, userData: Partial<User>) => {
         setLoading(true)
         try {
-            const res = await fetch(`/api/users/${userId}`, {
+            await requestJson(`/api/users/${userId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
@@ -130,28 +100,18 @@ export function useUser() {
                 body: JSON.stringify(userData)
             })
 
-            const data = await res.json()
-            if (res.ok) {
-                toast({
-                    variant: 'success',
-                    title: 'Éxito',
-                    description: `El usuario ${userData.firstName} ${userData.lastName} se ha actualizado correctamente`,
-                    duration: 2000,
-                })
-            } else {
-                toast({
-                    variant: 'destructive',
-                    title: 'Error',
-                    description: data.message || 'No se pudo actualizar el estado del usuario',
-                    duration: 2000,
-                })
-            }
+            toast({
+                variant: 'success',
+                title: 'Éxito',
+                description: `El usuario ${userData.firstName} ${userData.lastName} se ha actualizado correctamente`,
+                duration: 2000,
+            })
         } catch (error) {
             console.error('Error al actualizar el usuario:', error)
             toast({
                 variant: 'destructive',
                 title: 'Error',
-                description: 'Hubo un problema al actualizar el usuario',
+                description: error instanceof Error ? error.message : 'Hubo un problema al actualizar el usuario',
                 duration: 2000,
             })
         } finally {

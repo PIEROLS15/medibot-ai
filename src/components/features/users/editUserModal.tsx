@@ -1,7 +1,5 @@
-import React, { useState, useEffect } from "react"
+import { useState, useEffect, type FormEvent } from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import {
     Dialog,
     DialogContent,
@@ -10,13 +8,12 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Loader2, Save } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { User } from "@/types/user"
 import { useUser } from "@/hooks/useUser"
 import { useRoles } from "@/hooks/useRoles"
-import { getNameRoleUser } from '@/utils/user'
+import UserEditFields from './userEditFields'
 
 interface EditarUsuarioModalProps {
     open: boolean
@@ -42,12 +39,11 @@ export default function EditarUsuarioModal({
     const { updateUser } = useUser()
     const { roles, fetchRoles } = useRoles()
 
-    // Cargar roles al montar el componente
     useEffect(() => {
         fetchRoles()
     }, [fetchRoles])
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (user) {
             setFormData({
                 nombres: user.firstName,
@@ -58,12 +54,7 @@ export default function EditarUsuarioModal({
         }
     }, [user])
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target
-        setFormData((prev) => ({ ...prev, [name]: value }))
-    }
-
-    const handleSelectChange = (name: string, value: string) => {
+    const handleChange = (name: string, value: string) => {
         setFormData((prev) => ({ ...prev, [name]: value }))
     }
 
@@ -79,7 +70,7 @@ export default function EditarUsuarioModal({
         return ""
     }
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault()
 
         const validationError = validateForm()
@@ -102,10 +93,10 @@ export default function EditarUsuarioModal({
                     variant: "destructive",
                     title: "Error de rol",
                     description: "El rol seleccionado no es válido.",
-                });
-                return;
+                })
+                return
             }
-            const roleId = selectedRole.id;
+            const roleId = selectedRole.id
 
             await updateUser(user!.id, {
                 firstName: formData.nombres,
@@ -151,68 +142,12 @@ export default function EditarUsuarioModal({
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="nombres" className="text-gray-700 dark:text-gray-300">
-                                Nombres
-                            </Label>
-                            <Input
-                                id="nombres"
-                                name="nombres"
-                                value={formData.nombres}
-                                onChange={handleChange}
-                                className="dark:bg-gray-800 dark:border-gray-700"
-                                required
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="apellidos" className="text-gray-700 dark:text-gray-300">
-                                Apellidos
-                            </Label>
-                            <Input
-                                id="apellidos"
-                                name="apellidos"
-                                value={formData.apellidos}
-                                onChange={handleChange}
-                                className="dark:bg-gray-800 dark:border-gray-700"
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="email" className="text-gray-700 dark:text-gray-300">
-                            Correo Electrónico
-                        </Label>
-                        <Input
-                            id="email"
-                            name="email"
-                            type="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            className="dark:bg-gray-800 dark:border-gray-700"
-                            required
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="rol" className="text-gray-700 dark:text-gray-300">
-                            Rol
-                        </Label>
-                        <Select value={formData.rol} onValueChange={(value) => handleSelectChange("rol", value)} required>
-                            <SelectTrigger className="dark:bg-gray-800 dark:border-gray-700">
-                                <SelectValue placeholder="Seleccionar rol" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {roles.map((role) => (
-                                    <SelectItem key={role.id} value={role.name}>
-                                        {getNameRoleUser(role.name)}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
+                    <UserEditFields
+                        formData={formData}
+                        roles={roles}
+                        onChange={handleChange}
+                        onRoleChange={(value) => handleChange('rol', value)}
+                    />
 
                     <DialogFooter className="pt-4 gap-4 sm:gap-2">
                         <Button

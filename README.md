@@ -30,7 +30,6 @@ Includes validations with **Zod**, linting with **ESLint/Prettier**, and CI with
 ```bash
 medibot-ai/
 ├── README.md                 # Main project documentation
-├── components.json           # Component configuration (shadcn/ui)
 ├── cypress.config.ts         # Cypress configuration for E2E tests
 ├── eslint.config.mjs         # ESLint linting rules
 ├── next.config.ts            # Next.js framework configuration

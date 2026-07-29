@@ -1,5 +1,5 @@
 import { MedicalInput } from '@/types/recommendation'
-import { listAllergies, listDiseases, listSymptoms, fmtPregnancy } from '@/utils/recommendation'
+import { listAllergies, listDiseases, listSymptoms, fmtPregnancy } from '@/lib/recommendation/formatters'
 
 export function buildMedicalPrompt(data: MedicalInput) {
   const {

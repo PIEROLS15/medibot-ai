@@ -1,21 +1,14 @@
 import Link from "next/link"
-// import { Settings } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useSession } from 'next-auth/react'
 import Image from "next/image"
+import { useSidebarUserProfile } from '@/hooks/useSidebarUserProfile'
 
 interface UserProfileProps {
     collapsed?: boolean
 }
 
 const UserProfile = ({ collapsed = false }: UserProfileProps) => {
-    const { data: session } = useSession()
-
-    const initials = session?.user
-        ? (session.user.firstName.charAt(0).toUpperCase() + session.user.lastName.charAt(0).toUpperCase())
-        : ''
-
-    const profileImage = session?.user?.image
+    const { initials, profileImage, displayName, roleLabel } = useSidebarUserProfile()
 
     return (
         <div className="px-2 mb-4">
@@ -27,7 +20,6 @@ const UserProfile = ({ collapsed = false }: UserProfileProps) => {
             >
                 {!collapsed ? (
                     <div className="flex items-center w-full">
-                        {/* 👇 Renderiza imagen o iniciales */}
                         {profileImage ? (
                             <Image
                                 src={profileImage}
@@ -44,40 +36,19 @@ const UserProfile = ({ collapsed = false }: UserProfileProps) => {
 
                         <div className="ml-3 flex-1 min-w-0">
                             <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                {session?.user?.firstName} {session?.user?.lastName}
+                                {displayName}
                             </p>
                             <p className="text-xs text-gray-500 dark:text-gray-400 truncate" data-testid="user-role">
-                                {session?.user?.role === 'Administrator'
-                                    ? 'Administrador'
-                                    : session?.user?.role === 'Pharmacist'
-                                        ? 'Farmacéutico'
-                                        : ''}
+                                {roleLabel}
                             </p>
                         </div>
 
-                        {/* <Link
-                            href="/dashboard/perfil"
-                            className="ml-2 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                            title="Ver perfil"
-                        >
-                            <Settings className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                        </Link> */}
                     </div>
                 ) : (
-                    <Link
-                        href="/dashboard/perfil"
-                        className="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                        title="Ver perfil"
-                    >
+                    <Link href="/dashboard/perfil" className="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Ver perfil">
                         {profileImage ? (
                             <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-500/40 dark:border-gray-700 flex items-center justify-center">
-                                <Image
-                                    src={profileImage}
-                                    alt="Foto de perfil"
-                                    width={32}
-                                    height={32}
-                                    className="object-cover w-full h-full rounded-full"
-                                />
+                                <Image src={profileImage} alt="Foto de perfil" width={32} height={32} className="object-cover w-full h-full rounded-full" />
                             </div>
                         ) : (
                             <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-xs font-medium">

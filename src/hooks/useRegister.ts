@@ -6,6 +6,7 @@ import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@/hooks/useUser'
 import { RegisterUser } from '@/types/user'
+import { formatZodErrors } from '@/lib/zod'
 
 interface Errors {
     [key: string]: string | undefined
@@ -55,11 +56,7 @@ export const useRegister = () => {
             }
         } catch (err) {
             if (err instanceof z.ZodError) {
-                const formattedErrors: Errors = {}
-                err.errors.forEach((error) => {
-                    formattedErrors[error.path[0]] = error.message
-                })
-                setErrors(formattedErrors)
+                setErrors(formatZodErrors(err))
             } else {
                 toast({
                     variant: 'destructive',
@@ -97,11 +94,7 @@ export const useRegister = () => {
 
         } catch (err) {
             if (err instanceof z.ZodError) {
-                const formattedErrors: Errors = {}
-                err.errors.forEach((error) => {
-                    formattedErrors[error.path[0]] = error.message
-                })
-                setErrors(formattedErrors)
+                setErrors(formatZodErrors(err))
             }
         } finally {
             setIsLoading(false)

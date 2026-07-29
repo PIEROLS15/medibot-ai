@@ -3,31 +3,16 @@
 import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useRouter } from 'next/navigation';
-import { signOut } from 'next-auth/react';
-import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import Loader from '@/components/loader';
+import { useLogout } from '@/hooks/useLogout';
 
 interface LogoutButtonProps {
     collapsed?: boolean;
 }
 
 const LogoutButton = ({ collapsed = false }: LogoutButtonProps) => {
-    const router = useRouter();
-    const [isLoggingOut, setIsLoggingOut] = useState(false);
-
-    const handleLogout = async () => {
-        try {
-            setIsLoggingOut(true);
-            await signOut({ redirect: false });
-            router.push('/');
-            setTimeout(() => setIsLoggingOut(false), 1000);
-        } catch (error) {
-            console.error('Error al cerrar sesión:', error);
-            setIsLoggingOut(false);
-        }
-    };
+    const { isLoggingOut, handleLogout } = useLogout();
 
     return (
         <>

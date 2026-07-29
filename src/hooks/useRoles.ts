@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import { Role } from '@/types/user'
+import { requestJson } from '@/lib/http'
 
 export function useRoles() {
     const [roles, setRoles] = useState<Role[]>([])
@@ -8,14 +9,8 @@ export function useRoles() {
     const fetchRoles = useCallback(async () => {
         setLoading(true)
         try {
-            const res = await fetch(`/api/roles`)
-            if (!res.ok) throw new Error('Error al obtener los roles')
-            const data = await res.json()
-            if (res.ok) {
-                setRoles(data)
-            } else {
-                console.log('No se pudieron obtener los roles')
-            }
+            const data = await requestJson<Role[]>('/api/roles')
+            setRoles(data)
         } catch (error) {
             console.error('Error al obtener roles', error)
         } finally {

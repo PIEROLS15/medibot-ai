@@ -4,9 +4,14 @@ import { signIn } from 'next-auth/react'
 export const useLoginGoogle = () => {
     const [isLoadingGoogle, setIsLoadingGoogle] = useState(false)
 
-    const handleGoogleSignIn = () => {
+    const handleGoogleSignIn = async () => {
         setIsLoadingGoogle(true)
-        signIn('google', { callbackUrl: '/dashboard' })
+
+        try {
+            await signIn('google', { callbackUrl: '/dashboard' })
+        } finally {
+            setIsLoadingGoogle(false)
+        }
     }
 
     return {

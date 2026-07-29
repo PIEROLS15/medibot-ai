@@ -1,35 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useLoaderTheme } from '@/hooks/useLoaderTheme';
 
 export default function Loader() {
     const logoPath = process.env.NEXT_PUBLIC_LOGO_PATH || "/default_logo.png";
-    const [isDark, setIsDark] = useState<boolean | null>(null);
-
-    useEffect(() => {
-
-        const localTheme = typeof window !== "undefined" ? localStorage.getItem("theme") : null;
-
-        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-
-        const initialIsDark =
-            localTheme === "dark" || (!localTheme && prefersDark);
-
-        setIsDark(initialIsDark);
-
-        const observer = new MutationObserver(() => {
-            const hasDark = document.documentElement.classList.contains("dark");
-            setIsDark(hasDark);
-        });
-
-        observer.observe(document.documentElement, {
-            attributes: true,
-            attributeFilter: ["class"],
-        });
-
-        return () => observer.disconnect();
-    }, []);
+    const isDark = useLoaderTheme();
 
     if (isDark === null) return null;
 
